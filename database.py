@@ -1,7 +1,6 @@
-import json
-import requests
 import time
-
+from PyNotion import *
+from PyNotion.object import RichTextObject
 
 class Database:
     def __init__(self, parent, database_id=None):
@@ -71,13 +70,12 @@ class Database:
                        data=json.dumps(data))
 
     def create_post(self, row):
-        requests.post(
-            self.page.url, headers=self.page.patch_headers, data=json.dumps(row))
+        requests.post(self.page.url, headers=self.page.patch_headers, data=json.dumps(row))
 
     def make_post(self, data):
-        def annotations(bold=False, italic=False, strikethrough=False, underline=False, code=False, color='default'):
-            return {'bold': bold, 'italic': italic, 'strikethrough': strikethrough, 'underline': underline,
-                    "code": code, 'color': color}
+        # def annotations(bold=False, italic=False, strikethrough=False, underline=False, code=False, color='default'):
+        #     return {'bold': bold, 'italic': italic, 'strikethrough': strikethrough, 'underline': underline,
+        #             "code": code, 'color': color}
         text = {
             'parent': {'type': 'database_id', 'database_id': f"{self.database_id}"},
             'archived': False,
@@ -87,12 +85,14 @@ class Database:
         }
         for prop in data.keys():
             if self.properties[prop]['type'] == 'title':
+                t = RichTextObject(plain_text=data[prop])
                 text['properties'][prop] = {
-                    'title': [{
-                        'type': 'text',
-                        'text': {'content': data[prop], 'link': None},
-                        'annotations': annotations(),
-                        'href': None}]
+                    'title' : t.object_array
+                    # 'title': [{
+                    #     'type': 'text',
+                    #     'text': {'content': data[prop], 'link': None},
+                    #     'annotations': annotations(),
+                    #     'href': None}]
                 }
             if self.properties[prop]['type'] == 'number':
                 n = data[prop]
@@ -110,17 +110,20 @@ class Database:
                     'select': {'name': data[prop]}
                 }
             if self.properties[prop]['type'] == 'rich_text':
+                t = RichTextObject(plain_text=data[prop])
                 text['properties'][prop] = {
-                    'rich_text': [{
-                        'type': 'text',
-                        'text': {'content': data[prop], 'link': None},
-                        'annotations': annotations(),
-                        'href': None}]
+                    'rich_text': t.object_array
+                    # 'rich_text': [{
+                    #     'type': 'text',
+                    #     'text': {'content': data[prop], 'link': None},
+                    #     'annotations': annotations(),
+                    #     'href': None}]
                 }
             if self.properties[prop]['type'] == 'url':
                 text['properties'][prop] = {
                     'type': 'url', "url": data[prop],
                 }
+        
         return text
 
     def make_filter(self, filter=None, sort=None, page_size=None):
