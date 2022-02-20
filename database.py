@@ -1,76 +1,73 @@
 import time
 from PyNotion import *
 from PyNotion.object import RichTextObject
+from PyNotion.page import Page
 
 class Database:
-    def __init__(self, parent, database_id=None):
+    def __init__(self, Bot, parent,database_id=None):
         self.init_url = "https://api.notion.com/v1/databases/"
-        self.page = parent
-        if database_id:
-            self.id_init(database_id)
-        
-    def id_init(self, database_id):
+        self.Bot = Bot
+        self.parent = parent
         self.database_id = database_id
         self.database_url = f'https://api.notion.com/v1/databases/{database_id}'
         self.database_query_url = f'https://api.notion.com/v1/databases/{database_id}/query'
         self.properties = self.get_properties()
         self.results = self.query_database()
-        
-    def create_new_database(self, title, properties):
-        data = self.page.parent_json
-        data['icon'] = None
-        data['cover'] = None
-        data["title"] = [
-            {
-                "type": "text",
-                "text": {
-                    "content": f"{title}",
-                    "link": None
-                }
-            }
-        ]
-        data["properties"] = properties
-        r = requests.post(
-            self.init_url, 
-            headers=self.page.patch_headers,
-            data=json.dumps(data)
-        )
-        time.sleep(2)
-        database_id = self.page.get_database_id(target=title)
-        print(database_id)
-        if database_id:
-            print(f"database 新增成功")
-            self.id_init(database_id)
-        else:
-            print("Error")
+
+    # def create_new_database(self, title, properties):
+    #     data = self.Bot.parent_json
+    #     data['icon'] = None
+    #     data['cover'] = None
+    #     data["title"] = [
+    #         {
+    #             "type": "text",
+    #             "text": {
+    #                 "content": f"{title}",
+    #                 "link": None
+    #             }
+    #         }
+    #     ]
+    #     data["properties"] = properties
+    #     r = requests.post(
+    #         self.init_url,
+    #         headers=self.Bot.patch_headers,
+    #         data=json.dumps(data)
+    #     )
+    #     time.sleep(2)
+    #     database_id = self.page.get_database_id(target=title)
+    #     print(database_id)
+    #     if database_id:
+    #         print(f"database 新增成功")
+    #         self.id_init(database_id)
+    #     else:
+    #         print("Error")
 
 
     def get_properties(self):
         # get database properties
-        r = requests.get(self.database_url, headers=self.page.patch_headers)
+        r = requests.get(self.database_url, headers=self.Bot.patch_headers)
         result_dict = r.json()
-        # return properties dict
-        #print(result_dict)
         return result_dict['properties']
 
     def query_database(self, data=None):
         if data is None:
-            r = requests.post(self.database_query_url,
-                              headers=self.page.headers)
+            r = requests.post(self.database_query_url,headers=self.Bot.headers)
         else:
-            r = requests.post(
-                self.database_query_url, headers=self.page.patch_headers, data=json.dumps(data))
-        # return properties result list
-        # print(r.json()['results'])
+            r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(data))
         return r.json()['results']
 
-    def update_database(self, block_id, data):
-        url = self.page.url + block_id
-        requests.patch(url, headers=self.page.patch_headers,
-                       data=json.dumps(data))
+    # def update_database(self, block_id, data):
+    #     url = self.page.url + block_id
+    #     requests.patch(url, headers=self.page.patch_headers,data=json.dumps(data))
 
     def create_post(self, row):
-        requests.post(self.page.url, headers=self.page.patch_headers, data=json.dumps(row))
+        try:
+            r = requests.post(self.parent.url, headers=self.Bot.patch_headers, data=json.dumps(row))
+            print(r.json())
+            page_id = r.json()['id']
+            return Page(Bot=self.Bot, page_id=page_id)
+        except:
+            return False
 
     def make_post(self, data):
         # def annotations(bold=False, italic=False, strikethrough=False, underline=False, code=False, color='default'):

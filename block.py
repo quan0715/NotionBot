@@ -2,6 +2,24 @@ from PyNotion import *
 from PyNotion.object import RichTextObject
 import PyNotion.template as tp
 
+"""
+"bulleted_list_item",
+"numbered_list_item", 
+"toggle", 
+"to_do", 
+"quote", 
+"callout", 
+"synced_block", 
+"template", 
+"column",
+"child_page",
+"child_database", 
+"paragraph", 
+"header_1", 
+"header_2", 
+"header_3",
+"table"
+"""
 
 class Block:
     def __init__(self, block_id, parent):
@@ -16,29 +34,7 @@ class Block:
         return r.json()
 
     def add_children(self):
-        self.template = {
-            "children": [
-                {
-                    "object": "block",
-                    "type": "heading_2",
-                    "heading_2": {"text": [{"type": "text", "text": {"content": "Lacinato kale"}}]}
-                },
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "paragraph": {
-                        "text": [{
-                            "type": "text",
-                            "text": {
-                                "content": "",
-                                "link": {"url": ""}
-                            }
-                        }
-                        ]
-                    }
-                }
-            ]
-        }
+        template = {"children": []}
 
 
 class text_block(Block):
