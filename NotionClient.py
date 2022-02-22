@@ -1,6 +1,7 @@
 from PyNotion import *
-from PyNotion.database import Database
-from PyNotion.page import Page
+from PyNotion.base import Page, Database
+
+
 class Notion:
     def __init__(self,auth):
         self.auth = auth
@@ -22,27 +23,45 @@ class Notion:
     def fetch_databases(self,title):
         payload = {
             'query':f'{title}',
+            'filter':{'value':'database','property':'object'},
             'page_size':100
         }
         response = requests.request("POST", self.search_url,json=payload,headers=self.patch_headers)
+        #print(response.json())
         if response.json()['results']:
             #print(response.text)
             text = response.json()['results'][0]
             database_id = text['id']
-            page_id = text['parent']['page_id']
+            #page_id = text['parent']['page_id']
             #print(page_id)
-            page = Page(page_id=page_id,Bot=self)
-            database = Database(database_id=database_id,Bot=self,parent=page)
+            #page = Page(page_id=page_id,Bot=self)
+            return Database(database_id=database_id,Bot=self)
         else:
             print(f"Can't find DataBase {title}")
-        return database
+            return None
 
+    def fetch_page(self,title):
+        payload = {
+            'query': f'{title}',
+            'filter': {'value': 'page', 'property': 'object'},
+            'page_size': 100
+        }
+        response = requests.request("POST", self.search_url, json=payload, headers=self.patch_headers)
+        #print(response.json())
+        if response.json()['results']:
+            # print(response.text)
+            text = response.json()['results'][0]
+            page_id = text['id']
+            # print(page_id)
+            return Page(page_id=page_id, Bot=self)
+        else:
+            print(f"Can't find Page {title}")
+        return False
 
-    def search(self):
-        response = requests.request("POST", self.search_url, headers=self.patch_headers)
-        print(response.text)
 
 
 if __name__ == '__main__':
     notion = Notion("secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy")
-    notion.fetch_databases('eeclass')
+    #d = notion.fetch_databases('EECLASS')
+    #print(d.properties)
+    page3 = page.Page(page_id="e863ab46-2963-40c9-992c-465a78b3db3b",Bot=notion)

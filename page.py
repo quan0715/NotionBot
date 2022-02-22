@@ -3,11 +3,13 @@ import requests
 
 
 class Page:
+    url = 'https://api.notion.com/v1/pages/'
+
     def __init__(self, Bot, page_id):
         self.Bot = Bot
+        self.workspace = False
         self.page_id = page_id
-        self.url = f'https://api.notion.com/v1/pages/'
-        self.search_url = "https://api.notion.com/v1/search"
+        self.page_url = Page.url + self.page_id
         self.patch_url = f"https://api.notion.com/v1/blocks/{page_id}/children"
         self.parent_json = {
             "parent": {
@@ -15,20 +17,35 @@ class Page:
                 "page_id": self.page_id
             }
         }
+        self.result = self.retrieve_page()
+        self.parent = self.parent_init()
 
-    # def create_database(self):
+    def retrieve_page(self):
+        #print(self.page_url)
+        r = requests.get(self.page_url,headers=self.Bot.headers)
+        print(r.json())
+        return r.json()
 
-    def get_database_id(self, target):
-        r = requests.post(self.search_url, headers=self.Bot.patch_headers)
-        print(target)
-        j = json.loads(r.text)
-        results = j['results']
-        for r in results:
-            if r['object'] == 'database' and r['title'][0]['text']['content'] == target:
-                return r['id']
-        return False
+    def parent_init(self):
+        if self.result['parent']['type'] == 'workspace':
+            self.workspace = True
+        if self.result['parent']['type'] == 'database_id':
+            return database.Database(database_id=self.result['parent']['database_id'], Bot=self.Bot)
+        if self.result['parent']['type'] == 'page_id':
+            return Page(page_id=self.result['parent']['page_id'],Bot=self.Bot)
+        else:
+            return None
 
     def append_block(self,children_array=None):
-        template = {"children":children_array}
-        r = requests.patch(self.patch_url, headers=self.Bot.patch_headers, data=json.dumps(template))
+        children_template = {"children": children_array}
+        r = requests.patch(self.patch_url, headers=self.Bot.patch_headers, data=json.dumps(children_template))
+        print(r.json())
+
+    def update_page(self,data=None):
+        data = {'object': 'page',
+                'id': self.page_id,
+                'parent': {'type': 'database_id', 'database_id': f"{self.parent.database_id}"},
+                'icon': {'type': 'emoji', 'emoji': "🐶"}
+        }
+        r = requests.patch(self.page_url, headers=self.Bot.patch_headers, data=data)
         print(r.json())

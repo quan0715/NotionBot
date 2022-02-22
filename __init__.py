@@ -6,5 +6,5 @@ import PyNotion.database
 import PyNotion.page
 import PyNotion.template
 import PyNotion.NotionClient
-
-__all__ = ['requests','json','pd','block','database','page','template','object', 'NotionClient']
+import PyNotion.base
+__all__ = ['requests','json','pd','block','database','page','template','object', 'NotionClient','base']

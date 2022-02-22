@@ -1,10 +1,59 @@
+from PyNotion import *
+import requests
 import time
 from PyNotion import *
 from PyNotion.object import RichTextObject
 
+
+class Page:
+    url = 'https://api.notion.com/v1/pages/'
+
+    def __init__(self, Bot, page_id):
+        self.Bot = Bot
+        self.workspace = False
+        self.page_id = page_id
+        self.page_url = Page.url + self.page_id
+        self.patch_url = f"https://api.notion.com/v1/blocks/{page_id}/children"
+        self.parent_json = {
+            "parent": {
+                "type": "page_id",
+                "page_id": self.page_id
+            }
+        }
+        self.result = self.retrieve_page()
+        self.parent = self.parent_init()
+
+    def retrieve_page(self):
+        #print(self.page_url)
+        r = requests.get(self.page_url,headers=self.Bot.headers)
+        print(r.json())
+        return r.json()
+
+    def parent_init(self):
+        if self.result['parent']['type'] == 'workspace':
+            self.workspace = True
+        if self.result['parent']['type'] == 'database_id':
+            return Database(database_id=self.result['parent']['database_id'], Bot=self.Bot)
+        if self.result['parent']['type'] == 'page_id':
+            return Page(page_id=self.result['parent']['page_id'],Bot=self.Bot)
+        else:
+            return None
+
+    def append_block(self,children_array=None):
+        children_template = {"children": children_array}
+        r = requests.patch(self.patch_url, headers=self.Bot.patch_headers, data=json.dumps(children_template))
+        print(r.json())
+
+    def update_page(self,data):
+        print(self.page_url)
+        r = requests.patch(self.page_url, headers=self.Bot.patch_headers, data=json.dumps(data))
+        print(r.json())
+
+
 class Database:
     url = "https://api.notion.com/v1/databases/"
-    def __init__(self, Bot,database_id):
+
+    def __init__(self, Bot, database_id):
         self.Bot = Bot
         self.database_id = database_id
         self.database_url = Database.url + database_id
@@ -12,9 +61,10 @@ class Database:
         self.properties = self.get_properties()
         self.results = self.query_database()
         self.database_detail = self.retrieve_database()
-        #print(self.results)
+        # print(self.results)
         self.parent_id = self.database_detail['parent']['page_id']
         self.parent_url = "https://api.notion.com/v1/pages"
+
     # def create_new_database(self, title, properties):
     #     data = self.Bot.parent_json
     #     data['icon'] = None
@@ -43,7 +93,6 @@ class Database:
     #     else:
     #         print("Error")
 
-
     def get_properties(self):
         # get database properties
         r = requests.get(self.database_url, headers=self.Bot.patch_headers)
@@ -51,13 +100,13 @@ class Database:
         return result_dict['properties']
 
     def retrieve_database(self):
-        r = requests.get(self.database_url,headers = self.Bot.headers)
-        #print(r.json())
+        r = requests.get(self.database_url, headers=self.Bot.headers)
+        # print(r.json())
         return r.json()
 
     def query_database(self, data=None):
         if data is None:
-            r = requests.post(self.database_query_url,headers=self.Bot.headers)
+            r = requests.post(self.database_query_url, headers=self.Bot.headers)
         else:
             r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(data))
         return r.json()['results']
@@ -68,15 +117,16 @@ class Database:
 
     def create_post(self, row):
         # try:
-            r = requests.post(self.parent_url, headers=self.Bot.patch_headers, data=json.dumps(row))
-            print("good")
-            page_id = r.json()['id']
-            print(page_id)
-            time.sleep(1)
-            return Page(Bot=self.Bot, page_id=str(page_id))
-        # except:
-        #     print("wrong")
-        #     return False
+        r = requests.post(self.parent_url, headers=self.Bot.patch_headers, data=json.dumps(row))
+        print("good")
+        page_id = r.json()['id']
+        print(page_id)
+        time.sleep(1)
+        return Page(Bot=self.Bot, page_id=str(page_id))
+
+    # except:
+    #     print("wrong")
+    #     return False
 
     def make_post(self, data):
         text = {
@@ -119,11 +169,9 @@ class Database:
             if self.properties[prop]['type'] == 'date':
                 text['properties'][prop] = {
                     'type': 'date', 'date': data[prop]
-                    #.update({"time_zone": "Etc/GMT+8"})
+                    # .update({"time_zone": "Etc/GMT+8"})
                 }
 
-
-        
         return text
 
     def make_filter(self, filter=None, sort=None, page_size=None):
