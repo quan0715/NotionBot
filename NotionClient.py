@@ -56,7 +56,16 @@ class Notion:
             return Page(page_id=page_id, Bot=self)
         else:
             print(f"Can't find Page {title}")
-        return False
+
+        return None
+
+    def create_new_page(self, data, database=None):
+        if database:
+            p = Page.create_page(self,database.make_post(data))
+        else:
+            p = Page.create_page(self, data)
+        return p
+
 
 
 

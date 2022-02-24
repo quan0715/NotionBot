@@ -71,8 +71,21 @@ class BlockObject:
         return Template
 
 
-class Children_Block:
-    # array of children block
+class Emoji_object:
+    template = {"icon": {"type": "emoji", "emoji": ""}}
+    def __init__(self,emoji):
+        self.emoji = emoji
+        Emoji_object.template['icon']['emoji'] = emoji
+        self.emoji_json = Emoji_object.template
 
 
-    pass
+    def set_emoji(self,emoji):
+        self.emoji = emoji
+        self.emoji_json['icon']['emoji'] = emoji
+
+    def get_emoji(self):
+        return self.emoji
+
+    def get_json(self):
+        return self.emoji_json
+
