@@ -1,6 +1,8 @@
 import time
+
 from PyNotion import *
 from PyNotion.object import RichTextObject
+
 
 class Database:
     url = "https://api.notion.com/v1/databases/"

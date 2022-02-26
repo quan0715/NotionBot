@@ -1,5 +1,5 @@
-from PyNotion import *
 import requests
+from PyNotion import *
 
 
 class Page:

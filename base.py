@@ -1,6 +1,5 @@
-import time
 from PyNotion import *
-from PyNotion.object import RichTextObject
+from PyNotion.object import *
 
 
 class Page:
@@ -52,9 +51,11 @@ class Page:
     @classmethod
     def create_page(cls, Bot, data):
         r = requests.post(Page.url, headers=Bot.patch_headers, data=json.dumps(data))
-        page_id = r.json()['id']
-        return Page(Bot=Bot, page_id=str(page_id))
-
+        try:
+            page_id = r.json()['id']
+            return Page(Bot=Bot, page_id=str(page_id))
+        except KeyError:
+            return r.json()
 class Database:
     url = "https://api.notion.com/v1/databases/"
 
@@ -131,7 +132,8 @@ class Database:
         }
         for prop in data.keys():
             if self.properties[prop]['type'] in ['title','rich_text']:
-                text['properties'][prop] = {f'{self.properties[prop]["type"]}': RichTextObject(plain_text=data[prop]).object_array}
+                t = TextObject(content=data[prop]).object_array
+                text['properties'][prop] = {f'{self.properties[prop]["type"]}': t}
             if self.properties[prop]['type'] == 'number':
                 n = data[prop]
                 if type(n) == str:
