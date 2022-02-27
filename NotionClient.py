@@ -66,7 +66,8 @@ class Notion:
             p = Page.create_page(self, data)
         return p
 
-
+    def append_block(self,target_page,children_array):
+        pass
 
 
 if __name__ == '__main__':
