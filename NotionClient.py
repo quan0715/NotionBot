@@ -1,5 +1,5 @@
 from PyNotion import *
-from PyNotion.base import Page, Database
+from PyNotion import Database,Page
 
 
 class Notion:
@@ -68,6 +68,8 @@ class Notion:
 
     def append_block(self,target_page,children_array):
         pass
+
+
 
 
 if __name__ == '__main__':
