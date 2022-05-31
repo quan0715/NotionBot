@@ -28,25 +28,6 @@ class Page:
         properties = r.json()['properties']
         #properties = self.parent.properties
         result = Page.properties_data(properties)
-        # for key,value in properties.items():
-        #     prop_type = value['type']
-        #     try:
-        #         if prop_type in ['title', 'rich_text']:
-        #             result[key] = value[prop_type][0]['plain_text']
-        #         elif prop_type in ['number','url']:
-        #             result[key] = value[prop_type]
-        #         elif prop_type == 'select':
-        #             result[key] = value[prop_type]['name']
-        #         elif prop_type == 'date':
-        #             text = value[prop_type]['start']
-        #             if value[prop_type]['end']:
-        #                 text += f" ~ {value[prop_type]['end']}"
-        #             #if value[prop_type]['start']
-        #             result[key] = text
-        #         else:
-        #             result[key] = "None"
-        #     except:
-        #         result[key] = "None"
         return result
 
     def parent_init(self):
