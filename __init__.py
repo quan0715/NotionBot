@@ -1,9 +1,9 @@
 import json
 import pandas as pd
 import requests
-import PyNotion.base
-import PyNotion.block
-import PyNotion.object
-import PyNotion.template
-import PyNotion.NotionClient
-__all__ = ['requests','json','pd','block','template','object', 'NotionClient','base']
+from PyNotion.base import Page,Database
+from . import block
+from PyNotion.object import *
+from . import template
+from PyNotion.NotionClient import Notion
+__all__ = ['requests','json','pd','block','template','object', 'Notion','Page','Database']

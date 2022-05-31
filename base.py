@@ -1,30 +1,53 @@
 from PyNotion import *
 from PyNotion.object import *
+#from PyNotion.NotionClient import Notion
 
 
 class Page:
     url = 'https://api.notion.com/v1/pages/'
 
-    def __init__(self, Bot, page_id):
+    def __init__(self, Bot, page_id,parent = None):
         self.Bot = Bot
         self.workspace = False
         self.page_id = page_id
         self.page_url = Page.url + self.page_id
         self.patch_url = f"https://api.notion.com/v1/blocks/{page_id}/children"
-        # self.parent_json = {
-        #     "parent": {
-        #         "type": "page_id",
-        #         "page_id": self.page_id
-        #     }
-        # }
-        self.result = self.retrieve_page()
-        self.parent = self.parent_init()
+        self.parent = parent
 
     def retrieve_page(self):
         # print(self.page_url)
         r = requests.get(self.page_url, headers=self.Bot.headers)
         #print(r.json())
         return r.json()
+    def retrieve_page_data(self):
+        # database only
+        if type(self.parent) != Database:
+            print("can't change to dataframe")
+            return False
+        r = requests.get(self.page_url, headers=self.Bot.headers)
+        properties = r.json()['properties']
+        #properties = self.parent.properties
+        result = Page.properties_data(properties)
+        # for key,value in properties.items():
+        #     prop_type = value['type']
+        #     try:
+        #         if prop_type in ['title', 'rich_text']:
+        #             result[key] = value[prop_type][0]['plain_text']
+        #         elif prop_type in ['number','url']:
+        #             result[key] = value[prop_type]
+        #         elif prop_type == 'select':
+        #             result[key] = value[prop_type]['name']
+        #         elif prop_type == 'date':
+        #             text = value[prop_type]['start']
+        #             if value[prop_type]['end']:
+        #                 text += f" ~ {value[prop_type]['end']}"
+        #             #if value[prop_type]['start']
+        #             result[key] = text
+        #         else:
+        #             result[key] = "None"
+        #     except:
+        #         result[key] = "None"
+        return result
 
     def parent_init(self):
         if self.result['parent']['type'] == 'workspace':
@@ -56,6 +79,30 @@ class Page:
             return Page(Bot=Bot, page_id=str(page_id))
         except KeyError:
             return r.json()
+
+    @classmethod
+    def properties_data(cls,json_data):
+        result = {}
+        for key, value in json_data.items():
+            prop_type = value['type']
+            try:
+                if prop_type in ['title', 'rich_text']:
+                    result[key] = value[prop_type][0]['plain_text']
+                elif prop_type in ['number', 'url']:
+                    result[key] = value[prop_type]
+                elif prop_type == 'select':
+                    result[key] = value[prop_type]['name']
+                elif prop_type == 'date':
+                    text = value[prop_type]['start']
+                    if value[prop_type]['end']:
+                        text += f" ~ {value[prop_type]['end']}"
+                    # if value[prop_type]['start']
+                    result[key] = text
+                else:
+                    result[key] = "None"
+            except:
+                result[key] = "None"
+        return result
 
 
 class Database:
@@ -111,49 +158,72 @@ class Database:
         r = requests.get(self.database_url, headers=self.Bot.headers)
         return r.json()
 
-    def query_database(self, data=None):
-        start_course = ""
-        page = []
-        if data is None:
-            r = requests.post(self.database_query_url, headers=self.Bot.headers)
-        else:
-            r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(data))
-        page.append(r.json()['results'])
+    def query_database(self,query=None):
+        pages = []
+        if query is None:
+            query = {"page_size":100}
+        r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
+        pages.append(r.json()["results"])
         start_course = r.json()["next_cursor"]
         while start_course:
-            #print(start_course)
-            query = {
-                "start_cursor": start_course,
-                "page_size": 100
-            }
+            query = {"start_cursor": start_course, "page_size": 100}
             r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
             start_course = r.json()["next_cursor"]
-            page.append(r.json()['results'])
+            pages.append(r.json()['results'])
+        pages_list = [] # list of page
+        for p in pages:
+            for col in p:
+                pages_list.append(Page(self.Bot, col['id'],parent=self))
+        # result_list = {k:[] for k in self.properties.keys()}
+        # for p in page:
+        #     for col in p:
+        #         col = col['properties']
+        #         #print(col)
+        #         for key,value in col.items():
+        #             prop_type =self.properties[key]
+        #             try:
+        #                 if prop_type in ['title', 'rich_text']:
+        #                     result_list[key].append(value[prop_type][0]['plain_text'])
+        #                 if prop_type in ['number','url']:
+        #                     result_list[key].append(value[prop_type])
+        #                 if prop_type == 'select':
+        #                     result_list[key].append(value[prop_type]['name'])
+        #                 if prop_type == 'date':
+        #                     text = value[prop_type]['start']
+        #                     if value[prop_type]['end']:
+        #                         text += f" ~ {value[prop_type]['end']}"
+        #                     #if value[prop_type]['start']
+        #                     result_list[key].append(text)
+        #             except:
+        #                 result_list[key].append("None")
+        # result = {}
+        # for k,v in result_list.items():
+        #     if v:
+        #         result[k] = v
+        return pages_list
 
-        result_list = {k:[] for k in self.properties.keys()}
-        result_list['page_id'] = []
-        for p in page:
-            for column in p:
-                col = column['properties']
-                result_list['page_id'].append(column['id'])
-                #print(col)
-                for key,value in col.items():
-                    prop_type =self.properties[key]
-                    if prop_type in ['title', 'rich_text']:
-                        result_list[key].append(value[prop_type][0]['plain_text'])
-                    if prop_type in ['number','url']:
-                        result_list[key].append(value[prop_type])
-                    if prop_type == 'select':
-                        result_list[key].append(value[prop_type]['name'])
-                    if prop_type == 'date':
-                        text = value[prop_type]['start']
-                        if value[prop_type]['end']:
-                            text += f" ~ {value[prop_type]['end']}"
-                        #if value[prop_type]['start']
-                        result_list[key].append(text)
-                    else:
-                        result_list[key].append("None")
+    def query_database_dataframe(self,query=None):
+        pages = []
+        if query is None:
+            query = {"page_size": 100}
+        r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
+        pages.append(r.json()["results"])
+        start_course = r.json()["next_cursor"]
+        while start_course:
+            query = {"start_cursor": start_course, "page_size": 100}
+            r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
+            start_course = r.json()["next_cursor"]
+            pages.append(r.json()['results'])
+
+        result_list = {p: [] for p in self.properties}
+        for p in pages:
+            for col in p:
+                data = Database.properties_data(col['properties'])
+                for t, v in data.items():
+                    result_list[t].append(v)
+
         return result_list
+
 
     # def update_database(self, block_id, data):
     #     url = self.page.url + block_id
@@ -231,3 +301,28 @@ class Database:
         if page_size:
             template['page_size'] = page_size
         return template
+
+    @classmethod
+    def properties_data(cls,json_data):
+        result = {}
+        #print(json_data)
+        for key,value in json_data.items():
+            prop_type = value['type']
+            try:
+                if prop_type in ['title', 'rich_text']:
+                    result[key] = value[prop_type][0]['plain_text']
+                elif prop_type in ['number','url']:
+                    result[key] = value[prop_type]
+                elif prop_type == 'select':
+                    result[key] = value[prop_type]['name']
+                elif prop_type == 'date':
+                    text = value[prop_type]['start']
+                    if value[prop_type]['end']:
+                        text += f" ~ {value[prop_type]['end']}"
+                    #if value[prop_type]['start']
+                    result[key] = text
+                else:
+                    result[key] = "None"
+            except:
+                result[key] = "None"
+        return result
