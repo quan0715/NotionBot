@@ -131,33 +131,29 @@ class Database:
             page.append(r.json()['results'])
 
         result_list = {k:[] for k in self.properties.keys()}
+        result_list['page_id'] = []
         for p in page:
-            for col in p:
-                col = col['properties']
+            for column in p:
+                col = column['properties']
+                result_list['page_id'].append(column['id'])
                 #print(col)
                 for key,value in col.items():
                     prop_type =self.properties[key]
-                    try:
-                        if prop_type in ['title', 'rich_text']:
-                            result_list[key].append(value[prop_type][0]['plain_text'])
-                        if prop_type in ['number','url']:
-                            result_list[key].append(value[prop_type])
-                        if prop_type == 'select':
-                            result_list[key].append(value[prop_type]['name'])
-                        if prop_type == 'date':
-                            text = value[prop_type]['start']
-                            if value[prop_type]['end']:
-                                text += f" ~ {value[prop_type]['end']}"
-                            #if value[prop_type]['start']
-                            result_list[key].append(text)
-                    except:
+                    if prop_type in ['title', 'rich_text']:
+                        result_list[key].append(value[prop_type][0]['plain_text'])
+                    if prop_type in ['number','url']:
+                        result_list[key].append(value[prop_type])
+                    if prop_type == 'select':
+                        result_list[key].append(value[prop_type]['name'])
+                    if prop_type == 'date':
+                        text = value[prop_type]['start']
+                        if value[prop_type]['end']:
+                            text += f" ~ {value[prop_type]['end']}"
+                        #if value[prop_type]['start']
+                        result_list[key].append(text)
+                    else:
                         result_list[key].append("None")
-        result = {}
-        for k,v in result_list.items():
-            if v:
-                result[k] = v
-
-        return result
+        return result_list
 
     # def update_database(self, block_id, data):
     #     url = self.page.url + block_id
