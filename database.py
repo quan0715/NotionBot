@@ -2,11 +2,13 @@ import time
 
 from PyNotion import *
 from PyNotion.object import RichTextObject
+from PyNotion.base import Page
 
 
 class Database:
     url = "https://api.notion.com/v1/databases/"
-    def __init__(self, Bot,database_id):
+
+    def __init__(self, Bot, database_id):
         self.Bot = Bot
         self.database_id = database_id
         self.database_url = Database.url + database_id
@@ -14,9 +16,10 @@ class Database:
         self.properties = self.get_properties()
         self.results = self.query_database()
         self.database_detail = self.retrieve_database()
-        #print(self.results)
+        # print(self.results)
         self.parent_id = self.database_detail['parent']['page_id']
         self.parent_url = "https://api.notion.com/v1/pages"
+
     # def create_new_database(self, title, properties):
     #     data = self.Bot.parent_json
     #     data['icon'] = None
@@ -45,7 +48,6 @@ class Database:
     #     else:
     #         print("Error")
 
-
     def get_properties(self):
         # get database properties
         r = requests.get(self.database_url, headers=self.Bot.patch_headers)
@@ -53,15 +55,25 @@ class Database:
         return result_dict['properties']
 
     def retrieve_database(self):
-        r = requests.get(self.database_url,headers = self.Bot.headers)
-        #print(r.json())
+        r = requests.get(self.database_url, headers=self.Bot.headers)
+        # print(r.json())
         return r.json()
 
     def query_database(self, data=None):
+
+        result = {}
         if data is None:
-            r = requests.post(self.database_query_url,headers=self.Bot.headers)
+            r = requests.post(self.database_query_url, headers=self.Bot.headers,data=json.dumps(query))
         else:
             r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(data))
+        result = r.json()['results']
+        l = r.json()['results']
+        while len(l[l.keys()[0]]) == 100:
+            # max page size
+            start_course += 100
+            print(start_course)
+            #r = requests.post(self.database_query_url, headers=self.Bot.headers,data=json.dumps(query))
+            #f
         return r.json()['results']
 
     # def update_database(self, block_id, data):
@@ -70,15 +82,16 @@ class Database:
 
     def create_post(self, row):
         # try:
-            r = requests.post(self.parent_url, headers=self.Bot.patch_headers, data=json.dumps(row))
-            print("good")
-            page_id = r.json()['id']
-            print(page_id)
-            time.sleep(1)
-            return Page(Bot=self.Bot, page_id=str(page_id))
-        # except:
-        #     print("wrong")
-        #     return False
+        r = requests.post(self.parent_url, headers=self.Bot.patch_headers, data=json.dumps(row))
+        print("good")
+        page_id = r.json()['id']
+        print(page_id)
+        time.sleep(1)
+        return Page(Bot=self.Bot, page_id=str(page_id))
+
+    # except:
+    #     print("wrong")
+    #     return False
 
     def make_post(self, data):
         text = {
@@ -121,11 +134,9 @@ class Database:
             if self.properties[prop]['type'] == 'date':
                 text['properties'][prop] = {
                     'type': 'date', 'date': data[prop]
-                    #.update({"time_zone": "Etc/GMT+8"})
+                    # .update({"time_zone": "Etc/GMT+8"})
                 }
 
-
-        
         return text
 
     def make_filter(self, filter=None, sort=None, page_size=None):

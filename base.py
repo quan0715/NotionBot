@@ -23,7 +23,7 @@ class Page:
     def retrieve_page(self):
         # print(self.page_url)
         r = requests.get(self.page_url, headers=self.Bot.headers)
-        print(r.json())
+        #print(r.json())
         return r.json()
 
     def parent_init(self):
@@ -43,8 +43,10 @@ class Page:
 
     def update_page(self, data):
         r = requests.patch(self.page_url, headers=self.Bot.patch_headers, data=json.dumps(data))
-
         return r.json()
+
+    def update_emoji(self,emoji: str):
+        return self.update_page(Emoji_object(emoji).get_json())
 
     @classmethod
     def create_page(cls, Bot, data):
@@ -110,38 +112,51 @@ class Database:
         return r.json()
 
     def query_database(self, data=None):
+        start_course = ""
+        page = []
         if data is None:
             r = requests.post(self.database_query_url, headers=self.Bot.headers)
         else:
             r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(data))
-        result = r.json()['results']
+        page.append(r.json()['results'])
+        start_course = r.json()["next_cursor"]
+        while start_course:
+            #print(start_course)
+            query = {
+                "start_cursor": start_course,
+                "page_size": 100
+            }
+            r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
+            start_course = r.json()["next_cursor"]
+            page.append(r.json()['results'])
+
         result_list = {k:[] for k in self.properties.keys()}
-        for col in result:
-            col = col['properties']
-            #print(col)
-            for key,value in col.items():
-                prop_type =self.properties[key]
-                try:
-                    if prop_type in ['title', 'rich_text']:
-                        result_list[key].append(value[prop_type][0]['plain_text'])
-                    if prop_type in ['number','url']:
-                        result_list[key].append(value[prop_type])
-
-                    if prop_type == 'select':
-                        result_list[key].append(value[prop_type]['name'])
-
-                    if prop_type == 'date':
-                        text = value[prop_type]['start']
-                        if value[prop_type]['end']:
-                            text += f" ~ {value[prop_type]['end']}"
-                        #if value[prop_type]['start']
-                        result_list[key].append(text)
-                except:
-                    result_list[key].append("None")
+        for p in page:
+            for col in p:
+                col = col['properties']
+                #print(col)
+                for key,value in col.items():
+                    prop_type =self.properties[key]
+                    try:
+                        if prop_type in ['title', 'rich_text']:
+                            result_list[key].append(value[prop_type][0]['plain_text'])
+                        if prop_type in ['number','url']:
+                            result_list[key].append(value[prop_type])
+                        if prop_type == 'select':
+                            result_list[key].append(value[prop_type]['name'])
+                        if prop_type == 'date':
+                            text = value[prop_type]['start']
+                            if value[prop_type]['end']:
+                                text += f" ~ {value[prop_type]['end']}"
+                            #if value[prop_type]['start']
+                            result_list[key].append(text)
+                    except:
+                        result_list[key].append("None")
         result = {}
         for k,v in result_list.items():
             if v:
                 result[k] = v
+
         return result
 
     # def update_database(self, block_id, data):

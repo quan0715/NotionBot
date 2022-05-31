@@ -23,9 +23,7 @@ class Page:
     def retrieve_page(self):
         #print(self.page_url)
         r = requests.get(self.page_url,headers=self.Bot.headers)
-        print(r.json())
         return r.json()
-
     def parent_init(self):
         if self.result['parent']['type'] == 'workspace':
             self.workspace = True
@@ -39,7 +37,7 @@ class Page:
     def append_block(self,children_array=None):
         children_template = {"children": children_array}
         r = requests.patch(self.patch_url, headers=self.Bot.patch_headers, data=json.dumps(children_template))
-        print(r.json())
+        return r.json()
 
     def update_page(self,data=None):
         data = {'object': 'page',
@@ -48,4 +46,4 @@ class Page:
                 'icon': {'type': 'emoji', 'emoji': "🐶"}
         }
         r = requests.patch(self.page_url, headers=self.Bot.patch_headers, data=data)
-        print(r.json())
+        return r.json()

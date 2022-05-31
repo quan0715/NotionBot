@@ -89,21 +89,21 @@ class RichTextObject:
 
 
 class TextObject(RichTextObject):
-    def __init__(self, text_feature=None, content="", link="null"):
+    def __init__(self, text_feature=None, content="", link=None):
         super().__init__(text_feature=text_feature, plain_text=content, href=link)
         self.content = content
         self.link = link
         self.object_array[0].update({
             'type': 'text',
-            'text': {'content': self.content, "link": "null"}
+            'text': {'content': self.content, "link": None}
         })
         if self.link:
             self.link_object = LinkObject(self.link)
             self.object_array[0]['text']["link"] = self.link_object.template
 
     def update_link(self, url):
-        self.url = url
-        self.link_object.set_url(self.url)
+        self.link = url
+        self.link_object.set_url(self.link)
         self.object_array[0]['text']["link"] = self.link_object.template
 
 
@@ -115,7 +115,7 @@ class PropertyObject:
 class BlockObject:
     def __init__(self, block_type, traces=None, Children=None):
         self.object = None
-        self.block_type = type
+        self.block_type = block_type
         self.traces = traces
         self.template = {}
         self.create_object()
