@@ -1,5 +1,5 @@
 from enum import Enum
-
+from PyNotion.syntax import *
 
 class LinkObject:
     def __init__(self, url: str = ""):
@@ -16,29 +16,21 @@ class LinkObject:
         self.template = {"type": "url", "url": self.url}
 
 
-class TextColor(Enum):
-    default = "default"
-    gray = "gray"
-    brown = "brown"
-    orange = "orange"
-    yellow = "yellow"
-    green = "green"
-    blue = "blue"
-    purple = "purple"
-    pink = "pink"
-    red = "red"
+class property_filter_object:
+    def __init__(self, property: str, filter_type: str, condition: str, target):
+        self.property = property
+        self.filter_type = filter_type
+        self.condition = condition
+        self.target = target
+        self.template = {"property": self.property, self.filter_type: {self.condition: self.target}}
+
+class condition_filter_object:
+    def __init__(self, operator, filter_object_list):
+        self.operator = operator
+        self.filter_object_list = filter_object_list
+        self.template = {self.operator: [f.template for f in self.filter_object_list]}
 
 
-class BackgroundColor(Enum):
-    gray = "gray_background"
-    brown = "brown_background"
-    orange = "orange_background"
-    yellow = "yellow_background"
-    green = "green_background"
-    blue = "blue_background"
-    purple = "purple_background"
-    pink = "pink_background"
-    red = "red_background"
 
 
 class ChildrenObject:
@@ -138,7 +130,6 @@ class BlockObject:
             self.template[f"{self.block_type}"]["text"] = self.object.object_array
 
 
-
 class Emoji_object:
     template = {"icon": {"type": "emoji", "emoji": ""}}
 
@@ -156,3 +147,4 @@ class Emoji_object:
 
     def get_json(self):
         return self.emoji_json
+

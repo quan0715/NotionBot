@@ -69,7 +69,11 @@ class Notion:
     def append_block(self,target_page,children_array):
         pass
 
-
+    def update_page(self,page, data):
+        if type(page.parent) == Database:
+            page.update_page(page.parent.make_post(data))
+        else:
+            page.update_page(data)
 
 
 if __name__ == '__main__':
