@@ -101,6 +101,7 @@ class Database:
 
             }
         }
+
         for prop in data.keys():
             if self.properties[prop]['type'] == 'title':
                 t = RichTextObject(plain_text=data[prop])
@@ -139,37 +140,3 @@ class Database:
 
         return text
 
-    def make_filter(self, filter=None, sort=None, page_size=None):
-        """
-        filter -> dict
-        sort -> list
-        """
-        template = {
-            "filter": {
-
-            },
-            "sorts": [
-
-            ]
-        }
-        if filter:
-            template['filter'][filter[0]] = []
-            for f in filter[1]:
-                filter_object = {
-                    "property": f['property'],
-                    f['type']: {
-                        f['condition']: f['target']
-                    }
-                }
-                template['filter'][filter[0]].append(filter_object)
-        if sort:
-            for s in sort:
-                template['sorts'].append(
-                    {
-                        "property": s['property'],
-                        "direction": "ascending" if s['direction'] else "descending"
-                    }
-                )
-        if page_size:
-            template['page_size'] = page_size
-        return template
