@@ -8,16 +8,17 @@ class Notion:
         self.url = f'https://api.notion.com/v1'
         self.search_url = self.url + "/search"
         self.search_database = self.url + "/databases?page_size=100"
+        self.notion_version = "2022-02-22"
         self.headers = {
             "Authorization": f"Bearer {self.auth}",
-            "Notion-Version": "2021-08-16",
+            "Notion-Version": self.notion_version,
             "Accept": "application/json",
         }
         self.patch_headers = {
             "Accept": "application/json",
             "Authorization": f"Bearer {self.auth}",
-            "Notion-Version": "2021-08-16",
-            "Content-Type": "application/json"
+            "Notion-Version": self.notion_version,
+
         }
 
     def fetch_databases(self,title):
@@ -40,7 +41,7 @@ class Notion:
             print(f"Can't find DataBase {title}")
             return None
 
-    def fetch_page(self,title):
+    def fetch_page(self, title):
         payload = {
             'query': f'{title}',
             'filter': {'value': 'page', 'property': 'object'},
@@ -80,4 +81,4 @@ if __name__ == '__main__':
     notion = Notion("secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy")
     #d = notion.fetch_databases('EECLASS')
     #print(d.properties)
-    page3 = page.Page(page_id="e863ab46-2963-40c9-992c-465a78b3db3b",Bot=notion)
+

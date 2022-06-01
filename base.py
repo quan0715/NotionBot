@@ -155,33 +155,8 @@ class Database:
         for p in pages:
             for col in p:
                 pages_list.append(Page(self.Bot, col['id'],parent=self))
-        # result_list = {k:[] for k in self.properties.keys()}
-        # for p in page:
-        #     for col in p:
-        #         col = col['properties']
-        #         #print(col)
-        #         for key,value in col.items():
-        #             prop_type =self.properties[key]
-        #             try:
-        #                 if prop_type in ['title', 'rich_text']:
-        #                     result_list[key].append(value[prop_type][0]['plain_text'])
-        #                 if prop_type in ['number','url']:
-        #                     result_list[key].append(value[prop_type])
-        #                 if prop_type == 'select':
-        #                     result_list[key].append(value[prop_type]['name'])
-        #                 if prop_type == 'date':
-        #                     text = value[prop_type]['start']
-        #                     if value[prop_type]['end']:
-        #                         text += f" ~ {value[prop_type]['end']}"
-        #                     #if value[prop_type]['start']
-        #                     result_list[key].append(text)
-        #             except:
-        #                 result_list[key].append("None")
-        # result = {}
-        # for k,v in result_list.items():
-        #     if v:
-        #         result[k] = v
         return pages_list
+
 
     def query_database_dataframe(self,query=None):
         pages = []
