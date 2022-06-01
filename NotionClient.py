@@ -10,16 +10,17 @@ class Notion:
         self.url = f'https://api.notion.com/v1'
         self.search_url = self.url + "/search"
         self.search_database = self.url + "/databases?page_size=100"
+        self.notion_version = "2022-02-22"
         self.headers = {
             "Authorization": f"Bearer {self.auth}",
-            "Notion-Version": "2021-08-16",
+            "Notion-Version": self.notion_version,
             "Accept": "application/json",
         }
         self.patch_headers = {
             "Accept": "application/json",
             "Authorization": f"Bearer {self.auth}",
-            "Notion-Version": "2021-08-16",
-            "Content-Type": "application/json"
+            "Notion-Version": self.notion_version,
+
         }
 
     def retrieve(self, url):
