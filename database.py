@@ -2,7 +2,7 @@ import time
 
 from PyNotion import *
 from PyNotion.object import RichTextObject
-from PyNotion.base import Page
+from PyNotion.BaseObject import Page
 
 
 class Database:

@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 import requests
-from PyNotion.base import Page,Database
+from PyNotion.BaseObject import Page,Database
 from . import block
 from PyNotion.object import *
 from . import template
