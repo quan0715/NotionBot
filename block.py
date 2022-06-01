@@ -44,7 +44,7 @@ class text_block(Block):
         self.type = self.content['type']
         self.object = RichTextObject()
         self.template = {'type': self.type, self.type: {'text': []}}
-        self.object.object_array = self.content[self.type]['text']
+        self.object.template = self.content[self.type]['text']
 
     def update_trace(self,word=None,annotations="default"):
         # type
@@ -54,7 +54,7 @@ class text_block(Block):
             self.object.update_annotations(annotations)
         if word:
             self.object.update_content(word)
-        self.template[self.type]['text'] = self.object.object_array
+        self.template[self.type]['text'] = self.object.template
         r = requests.patch(self.block_url, headers=self.parent.patch_headers, data=json.dumps(self.template))
 
     # def upload_block(self,word="",annotations="default"):

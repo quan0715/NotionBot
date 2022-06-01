@@ -7,9 +7,6 @@ from abc import ABC, abstractmethod
 
 
 class BaseObject:
-    PageAPI = 'https://api.notion.com/v1/pages/'
-    DatabaseAPI = "https://api.notion.com/v1/databases/"
-
     def __init__(self, bot, object_id):
         self.bot = bot
         self.object_id = object_id
@@ -40,9 +37,10 @@ class BaseObject:
 
 
 class Page(BaseObject):
+    PageAPI = 'https://api.notion.com/v1/pages/'
     def __init__(self, bot, page_id, parent=None):
         super().__init__(bot, page_id)
-        self.page_url = super().PageAPI + self.object_id
+        self.page_url = Page.PageAPI + self.object_id
         self.page_property = self.page_url + "/properties/"
         self.patch_url = f"https://api.notion.com/v1/blocks/{self.object_id}/children"
         self.parent = parent
@@ -75,11 +73,11 @@ class Page(BaseObject):
         return r.json()
 
     def update_emoji(self, emoji: str):
-        return self.update_page(Emoji_object(emoji).get_json())
+        return self.update(EmojiObject(emoji).get_json())
 
     @classmethod
     def create_page(cls, bot, data):
-        r = requests.post(super().PageAPI, headers=bot.patch_headers, data=json.dumps(data))
+        r = requests.post(cls.PageAPI, headers=bot.patch_headers, data=json.dumps(data))
         try:
             return Page(bot=bot, page_id=str(r.json()['id']))
         except KeyError:
@@ -88,44 +86,18 @@ class Page(BaseObject):
 
 
 class Database(BaseObject):
+    database_api = "https://api.notion.com/v1/databases/"
     def __init__(self, bot, database_id: str):
         super().__init__(bot,database_id)
-        self.database_url = super().DatabaseAPI + database_id
+        self.database_url = Database.database_api + database_id
         self.database_query_url = f'{self.database_url}/query'
         self.result_list = self.query_database()
         self.database_detail, self.properties, self.parent = self.retrieve_database()
 
-    # def create_new_database(self, title, properties):
-    #     data = self.Bot.parent_json
-    #     data['icon'] = None
-    #     data['cover'] = None
-    #     data["title"] = [
-    #         {
-    #             "type": "text",
-    #             "text": {
-    #                 "content": f"{title}",
-    #                 "link": None
-    #             }
-    #         }
-    #     ]
-    #     data["properties"] = properties
-    #     r = requests.post(
-    #         self.init_url,
-    #         headers=self.Bot.patch_headers,
-    #         data=json.dumps(data)
-    #     )
-    #     time.sleep(2)
-    #     database_id = self.page.get_database_id(target=title)
-    #     print(database_id)
-    #     if database_id:
-    #         print(f"database 新增成功")
-    #         self.id_init(database_id)
-    #     else:
-    #         print("Error
 
     def post(self, data):
         data = data if isinstance(data,str) else json.dumps(data)
-        r = requests.post(super().PageAPI, headers=self.bot.patch_headers, data=data)
+        r = requests.post(Page.PageAPI, headers=self.bot.patch_headers, data=data)
         try:
             return Page(bot=self.bot, page_id=str(r.json()['id']))
         except KeyError:
@@ -184,7 +156,7 @@ class Database(BaseObject):
         for prop, value in data.items():
             value_type = self.properties[prop]['type']
             if value_type == Text.Type.title or value_type == Text.Type.rich_text:
-                t = TextObject(content=value).object_array
+                t = TextObject(content=value).template
                 prop_dict[prop] = {f'{value_type}': t}
             if value_type == Number.Type.number:
                 if type(value) == str:

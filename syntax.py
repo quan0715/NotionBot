@@ -3,8 +3,9 @@ from enum import Enum
 
 class ParentType(str, Enum):
     database = "database_id"
-    page = "page_id"
+    page_id = "page_id"
     workspace = "workspace"
+
 
 class Number:
     class Type(str, Enum):
@@ -95,7 +96,7 @@ class Text:
         is_not_empty = "is_not_empty"
 
 
-class ValueType(str, Enum):
+class PropertyType(str, Enum):
     number = "number"
     title = "title"
     rich_text = "rich_text"
@@ -130,6 +131,9 @@ class Select:
 
 
 class CheckBox:
+    class Type(str,Enum):
+        checkbox = "checkbox"
+
     class Filter(str, Enum):
         checkbox = "checkbox"
 

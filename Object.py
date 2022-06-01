@@ -29,7 +29,7 @@ class Sorts:
 
 
 class SortObject:
-    def __init__(self, prop,direction="ascending"):
+    def __init__(self, prop, direction="ascending"):
         self.property = prop
         self.direction = direction
         self.template = {
@@ -60,7 +60,7 @@ class Query:
 
 
 class ParentObject:
-    def __init__(self, parent_type, parent_id):
+    def __init__(self, parent_type:str, parent_id):
         self.parent_type = parent_type
         self.parent_id = parent_id
         self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
@@ -68,8 +68,56 @@ class ParentObject:
     def make_template(self):
         self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
 
+
 class ChildrenObject:
     pass
+
+
+class PropertyBase:
+    def __init__(self, prop_type:str):
+        self.type = prop_type
+        self.template = {self.type: {}}
+
+
+class TextProperty(PropertyBase):
+    def __init__(self):
+        super().__init__(prop_type=Text.Type.rich_text)
+
+
+class TitleProperty(PropertyBase):
+    def __init__(self):
+        super().__init__(prop_type=Text.Type.title)
+
+
+class NumberProperty(PropertyBase):
+    def __init__(self, _format=Number.Format.number):
+        super().__init__(Number.Type.number)
+        self.format = _format
+        self.template[self.type] = {"format": _format}
+
+
+class SelectProperty(PropertyBase):
+    def __init__(self, select_type =Select.Type.select, option_list=[]):
+        super().__init__(select_type)
+        self.template[self.type] = {"options": [{"name": o[0], "color": o[1]} for o in option_list]}
+
+
+class CheckboxProperty(PropertyBase):
+    def __init__(self):
+        super().__init__(CheckBox.Type.checkbox)
+
+
+class DataProperty(PropertyBase):
+    def __init__(self):
+        super().__init__("date")
+
+
+class UrlProperty(PropertyBase):
+    def __init__(self):
+        super().__init__("url")
+
+
+
 
 
 class RichTextObject:
@@ -82,7 +130,7 @@ class RichTextObject:
         '''
         self.href = href
         self.plain_text = plain_text
-        self.object_array = [{
+        self.template = [{
             # 'type': "",
             # self.type: {'content': self.plain_text},
             'annotations': {
@@ -102,17 +150,17 @@ class RichTextObject:
     def update_annotations(self, annotations):
         for key, val in annotations.items():
             if key == 'color':
-                self.object_array[0]['annotations'][key] = val.value
+                self.template[0]['annotations'][key] = val.value
             else:
-                self.object_array[0]['annotations'][key] = val
+                self.template[0]['annotations'][key] = val
 
     def update_plain_text(self, plain_text):
         self.plain_text = plain_text
-        self.object_array[0]['plain_text'] = self.plain_text
+        self.template[0]['plain_text'] = self.plain_text
 
     def update_href(self, href):
         self.href = href
-        self.object_array[0]["href"] = self.href
+        self.template[0]["href"] = self.href
 
 
 class TextObject(RichTextObject):
@@ -120,23 +168,29 @@ class TextObject(RichTextObject):
         super().__init__(text_feature=text_feature, plain_text=content, href=link)
         self.content = content
         self.link = link
-        self.object_array[0].update({
+        self.template[0].update({
             'type': 'text',
             'text': {'content': self.content, "link": None}
         })
         if self.link:
             self.link_object = LinkObject(self.link)
-            self.object_array[0]['text']["link"] = self.link_object.template
+            self.template[0]['text']["link"] = self.link_object.template
 
     def update_link(self, url):
         self.link = url
         self.link_object.set_url(self.link)
-        self.object_array[0]['text']["link"] = self.link_object.template
+        self.template[0]['text']["link"] = self.link_object.template
 
 
 class PropertyObject:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, properties_dict: dict) -> None:
+        self.template = {}
+        for name, value_type_object in properties_dict.items():
+            self.template[name] = value_type_object.template
+
+    def get_template(self):
+        return self.template
+
 
 
 class BlockObject:
@@ -162,16 +216,16 @@ class BlockObject:
             f"{self.block_type}": {}
         }
         if type(self.object) == TextObject:
-            self.template[f"{self.block_type}"]["text"] = self.object.object_array
+            self.template[f"{self.block_type}"]["text"] = self.object.template
 
 
-class Emoji_object:
+class EmojiObject:
     template = {"icon": {"type": "emoji", "emoji": ""}}
 
     def __init__(self, emoji):
         self.emoji = emoji
-        Emoji_object.template['icon']['emoji'] = emoji
-        self.emoji_json = Emoji_object.template
+        EmojiObject.template['icon']['emoji'] = emoji
+        self.emoji_json = EmojiObject.template
 
     def set_emoji(self, emoji):
         self.emoji = emoji
@@ -182,6 +236,7 @@ class Emoji_object:
 
     def get_json(self):
         return self.emoji_json
+
 
 class LinkObject:
     def __init__(self, url: str = ""):
