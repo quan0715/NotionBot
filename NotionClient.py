@@ -87,9 +87,3 @@ class Notion:
             'properties': {}
         }
 
-
-if __name__ == '__main__':
-    notion = Notion("secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy")
-    # d = notion.fetch_databases('EECLASS')
-    # print(d.properties)
-
