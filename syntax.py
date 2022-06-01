@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class ParentType(str, Enum):
+    database = "database_id"
+    page = "page_id"
+    workspace = "workspace"
+
 class Number:
     class Type(str, Enum):
         number = "number"
@@ -124,10 +129,14 @@ class Select:
         is_not_empty = "is_not_empty"
 
 
-class CheckboxFilter(str, Enum):
-    # checkbox
-    equals = "equals"
-    does_not_equal = "does_not_equal"
+class CheckBox:
+    class Filter(str, Enum):
+        checkbox = "checkbox"
+
+    class CheckboxFilter(str, Enum):
+        # checkbox
+        equals = "equals"
+        does_not_equal = "does_not_equal"
 
 
 class Sort:

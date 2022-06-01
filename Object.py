@@ -59,7 +59,14 @@ class Query:
         return template
 
 
+class ParentObject:
+    def __init__(self, parent_type, parent_id):
+        self.parent_type = parent_type
+        self.parent_id = parent_id
+        self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
 
+    def make_template(self):
+        self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
 
 class ChildrenObject:
     pass

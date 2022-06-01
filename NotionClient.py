@@ -1,6 +1,6 @@
 from PyNotion import *
 from PyNotion import Database,Page
-
+from PyNotion.Object import *
 
 class Notion:
     def __init__(self,auth):
@@ -35,7 +35,7 @@ class Notion:
             #page_id = text['parent']['page_id']
             #print(page_id)
             #page = Page(page_id=page_id,Bot=self)
-            return Database(database_id=database_id,Bot=self)
+            return Database(bot = self, database_id=database_id)
         else:
             print(f"Can't find DataBase {title}")
             return None
@@ -61,7 +61,7 @@ class Notion:
 
     def create_new_page(self, data, database=None):
         if database:
-            p = Page.create_page(self,database.make_post(data))
+            p = database.post(self, database.make_post(data))
         else:
             p = Page.create_page(self, data)
         return p
@@ -75,6 +75,12 @@ class Notion:
         else:
             page.update_page(data)
 
+    def create_post_template(self, target, data):
+        template = {
+            'parent': ParentObject(target.type, target.id).template,
+            'archived': False,
+            'properties': {}
+        }
 
 if __name__ == '__main__':
     notion = Notion("secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy")

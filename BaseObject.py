@@ -1,68 +1,25 @@
 from PyNotion import *
 from PyNotion.Object import *
-#from PyNotion.NotionClient import Notion
+from abc import ABC, abstractmethod
 
 
-class Page:
-    url = 'https://api.notion.com/v1/pages/'
+# from PyNotion.NotionClient import Notion
 
-    def __init__(self, Bot, page_id,parent = None):
-        self.Bot = Bot
-        self.workspace = False
-        self.page_id = page_id
-        self.page_url = Page.url + self.page_id
-        self.patch_url = f"https://api.notion.com/v1/blocks/{page_id}/children"
-        self.parent = parent
 
-    def retrieve_page(self):
-        # print(self.page_url)
-        r = requests.get(self.page_url, headers=self.Bot.headers)
-        #print(r.json())
+class BaseObject:
+    PageAPI = 'https://api.notion.com/v1/pages/'
+    DatabaseAPI = "https://api.notion.com/v1/databases/"
+
+    def __init__(self, bot, object_id):
+        self.bot = bot
+        self.object_id = object_id
+
+    def retrieve(self, url):
+        r = requests.get(url, headers=self.bot.headers)
         return r.json()
-    def retrieve_page_data(self):
-        # database only
-        if type(self.parent) != Database:
-            print("can't change to dataframe")
-            return False
-        r = requests.get(self.page_url, headers=self.Bot.headers)
-        properties = r.json()['properties']
-        #properties = self.parent.properties
-        result = Page.properties_data(properties)
-        return result
-
-    def parent_init(self):
-        if self.result['parent']['type'] == 'workspace':
-            self.workspace = True
-        if self.result['parent']['type'] == 'database_id':
-            return Database(database_id=self.result['parent']['database_id'], Bot=self.Bot)
-        if self.result['parent']['type'] == 'page_id':
-            return Page(page_id=self.result['parent']['page_id'], Bot=self.Bot)
-        else:
-            return None
-
-    def append_block(self, children_array=None):
-        children_template = {"children": children_array}
-        r = requests.patch(self.patch_url, headers=self.Bot.patch_headers, data=json.dumps(children_template))
-        return r.json()
-
-    def update_page(self, data):
-        r = requests.patch(self.page_url, headers=self.Bot.patch_headers, data=json.dumps(data))
-        return r.json()
-
-    def update_emoji(self,emoji: str):
-        return self.update_page(Emoji_object(emoji).get_json())
 
     @classmethod
-    def create_page(cls, Bot, data):
-        r = requests.post(Page.url, headers=Bot.patch_headers, data=json.dumps(data))
-        try:
-            page_id = r.json()['id']
-            return Page(Bot=Bot, page_id=str(page_id))
-        except KeyError:
-            return r.json()
-
-    @classmethod
-    def properties_data(cls,json_data):
+    def properties_data(cls, json_data):
         result = {}
         for key, value in json_data.items():
             prop_type = value['type']
@@ -86,19 +43,55 @@ class Page:
         return result
 
 
-class Database:
-    url = "https://api.notion.com/v1/databases/"
+class Page(BaseObject):
+    def __init__(self, bot, page_id, parent=None):
+        super().__init__(bot, page_id)
+        self.page_url = super().PageAPI + self.object_id
+        self.patch_url = f"https://api.notion.com/v1/blocks/{self.object_id}/children"
+        self.parent = parent
 
-    def __init__(self, Bot, database_id:str):
-        self.Bot = Bot
-        self.database_id = database_id
-        self.database_url = Database.url + database_id
+    def retrieve(self, **kwargs):
+        return super().retrieve(self.page_url)
+
+    def retrieve_page_data(self):
+        # database only
+        if not isinstance(self.parent, Database):
+            print("can't change to dataframe")
+            return False
+        r = self.retrieve()
+        properties = r['properties']
+        result = super().properties_data(properties)
+        return result
+
+    def append_block(self, children_array=None):
+        children_template = {"children": children_array}
+        r = requests.patch(self.patch_url, headers=self.bot.patch_headers, data=json.dumps(children_template))
+        return r.json()
+
+    def update_page(self, data):
+        r = requests.patch(self.page_url, headers=self.bot.patch_headers, data=json.dumps(data))
+        return r.json()
+
+    def update_emoji(self, emoji: str):
+        return self.update_page(Emoji_object(emoji).get_json())
+
+    @classmethod
+    def create_page(cls, bot, data):
+        r = requests.post(super().PageAPI, headers=bot.patch_headers, data=json.dumps(data))
+        try:
+            return Page(bot=bot, page_id=str(r.json()['id']))
+        except KeyError:
+            print("create faild")
+            return r.json()
+
+
+class Database(BaseObject):
+    def __init__(self, bot, database_id: str):
+        super().__init__(bot,database_id)
+        self.database_url = super().DatabaseAPI + database_id
         self.database_query_url = f'{self.database_url}/query'
-        self.properties = self.get_properties()
-        self.results = self.query_database()
-        self.database_detail = self.retrieve_database()
-        self.parent_id = self.database_detail['parent']['page_id']
-        self.parent_url = "https://api.notion.com/v1/pages"
+        self.result_list = self.query_database()
+        self.database_detail, self.properties, self.parent = self.retrieve_database()
 
     # def create_new_database(self, title, properties):
     #     data = self.Bot.parent_json
@@ -126,62 +119,69 @@ class Database:
     #         print(f"database 新增成功")
     #         self.id_init(database_id)
     #     else:
-    #         print("Error")
+    #         print("Error
+
+    def post(self, data):
+        data = data if isinstance(data,str) else json.dumps(data)
+        r = requests.post(super().PageAPI, headers=self.bot.patch_headers, data=data)
+        try:
+            return Page(bot=self.bot, page_id=str(r.json()['id']))
+        except KeyError:
+            print("Create failed")
+            return r.json()
 
     def get_properties(self):
         # get database properties
-        r = requests.get(self.database_url, headers=self.Bot.patch_headers)
+        r = requests.get(self.database_url, headers=self.bot.patch_headers)
         result_dict = r.json()['properties']
         result = {key: result_dict[key]['type'] for key in result_dict.keys()}
         return result
 
     def retrieve_database(self):
-        r = requests.get(self.database_url, headers=self.Bot.headers)
-        return r.json()
+        r = requests.get(self.database_url, headers=self.bot.headers)
+        result_dict = r.json()['properties']
+        properties = {key: result_dict[key]['type'] for key in result_dict.keys()}
+        parent_type = r.json()['parent']['type']
+        parent_id = r.json()['parent'][parent_type]
+        return r.json(), properties, ParentObject(parent_type, parent_id)
 
-    def query_database(self,query=None):
+    def query_database(self, query=None):
         pages = []
         q = query.template if query else {"page_size": 100}
-        r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(q))
+        r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
         pages.append(r.json()["results"])
         start_course = r.json()["next_cursor"]
         if start_course and query.page_size == 100:
             while start_course:
                 query.start_cursor = start_course
                 query.page_size = 100
-                r = requests.post(
-                    self.database_query_url,
-                    headers=self.Bot.patch_headers,
-                    data=json.dumps(query.make_template())
-                )
-        pages_list = [] # list of page
+                q = query.make_template()
+                r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
+        pages_list = []  # list of page
         for p in pages:
             for col in p:
                 pages_list.append(col)
         return pages_list
 
-    def query_database_page_list(self,query=None):
+    def query_database_page_list(self, query=None):
         results_list = self.query_database(query)
-        results = [Page(self.Bot, col['id'],parent=self) for col in results_list]
+        results = [Page(self.bot, col['id'], parent=self) for col in results_list]
         return results
 
     def query_database_dataframe(self, query: Query = None):
         result_list = self.query_database(query)
         result = {p: [] for p in self.properties}
         for col in result_list:
-            data = Database.properties_data(col['properties'])
+            data = super().properties_data(col['properties'])
             for t, v in data.items():
                 result[t].append(v)
         return result
 
-
-    def make_post(self, data):
+    def post_template(self, data):
         text = {
-            'parent': {'type': 'database_id', 'database_id': f"{self.database_id}"},
+            'parent': ParentObject(ParentType.database, self.object_id).template,
             'archived': False,
-            'properties': {
-
-            }
+            'properties': {}
         }
         for prop in data.keys():
             if self.properties[prop] in ['title', 'rich_text']:
@@ -212,63 +212,3 @@ class Database:
                 }
 
         return text
-
-    def make_filter(self, filter=None, sort=None, page_size=None):
-        """
-        filter -> dict
-        sort -> list
-        """
-        template = {
-            "filter": {
-
-            },
-            "sorts": [
-
-            ]
-        }
-        if filter:
-            template['filter'][filter[0]] = []
-            for f in filter[1]:
-                filter_object = {
-                    "property": f['property'],
-                    f['type']: {
-                        f['condition']: f['target']
-                    }
-                }
-                template['filter'][filter[0]].append(filter_object)
-        if sort:
-            for s in sort:
-                template['sorts'].append(
-                    {
-                        "property": s['property'],
-                        "direction": "ascending" if s['direction'] else "descending"
-                    }
-                )
-        if page_size:
-            template['page_size'] = page_size
-        return template
-
-    @classmethod
-    def properties_data(cls,json_data):
-        result = {}
-        #print(json_data)
-        for key,value in json_data.items():
-            prop_type = value['type']
-            try:
-                if prop_type in ['title', 'rich_text']:
-                    result[key] = value[prop_type][0]['plain_text']
-                elif prop_type in ['number','url']:
-                    result[key] = value[prop_type]
-                elif prop_type == 'select':
-                    result[key] = value[prop_type]['name']
-                elif prop_type == 'date':
-                    text = value[prop_type]['start']
-                    if value[prop_type]['end']:
-                        text += f" ~ {value[prop_type]['end']}"
-                    #if value[prop_type]['start']
-                    result[key] = text
-                else:
-                    result[key] = "None"
-            except:
-                result[key] = "None"
-        return result
