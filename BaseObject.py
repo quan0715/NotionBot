@@ -1,5 +1,5 @@
 from PyNotion import *
-from PyNotion.object import *
+from PyNotion.Object import *
 #from PyNotion.NotionClient import Notion
 
 
@@ -141,74 +141,39 @@ class Database:
 
     def query_database(self,query=None):
         pages = []
-        if query is None:
-            query = {"page_size":100}
-        r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
+        q = query.template if query else {"page_size": 100}
+        r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(q))
         pages.append(r.json()["results"])
         start_course = r.json()["next_cursor"]
-        while start_course:
-            query = {"start_cursor": start_course, "page_size": 100}
-            r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
-            start_course = r.json()["next_cursor"]
-            pages.append(r.json()['results'])
+        if start_course and query.page_size == 100:
+            while start_course:
+                query.start_cursor = start_course
+                query.page_size = 100
+                r = requests.post(
+                    self.database_query_url,
+                    headers=self.Bot.patch_headers,
+                    data=json.dumps(query.make_template())
+                )
         pages_list = [] # list of page
         for p in pages:
             for col in p:
-                pages_list.append(Page(self.Bot, col['id'],parent=self))
-        # result_list = {k:[] for k in self.properties.keys()}
-        # for p in page:
-        #     for col in p:
-        #         col = col['properties']
-        #         #print(col)
-        #         for key,value in col.items():
-        #             prop_type =self.properties[key]
-        #             try:
-        #                 if prop_type in ['title', 'rich_text']:
-        #                     result_list[key].append(value[prop_type][0]['plain_text'])
-        #                 if prop_type in ['number','url']:
-        #                     result_list[key].append(value[prop_type])
-        #                 if prop_type == 'select':
-        #                     result_list[key].append(value[prop_type]['name'])
-        #                 if prop_type == 'date':
-        #                     text = value[prop_type]['start']
-        #                     if value[prop_type]['end']:
-        #                         text += f" ~ {value[prop_type]['end']}"
-        #                     #if value[prop_type]['start']
-        #                     result_list[key].append(text)
-        #             except:
-        #                 result_list[key].append("None")
-        # result = {}
-        # for k,v in result_list.items():
-        #     if v:
-        #         result[k] = v
+                pages_list.append(col)
         return pages_list
 
-    def query_database_dataframe(self,query=None):
-        pages = []
-        if query is None:
-            query = {"page_size": 100}
-        r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
-        pages.append(r.json()["results"])
-        start_course = r.json()["next_cursor"]
-        while start_course:
-            query = {"start_cursor": start_course, "page_size": 100}
-            r = requests.post(self.database_query_url, headers=self.Bot.patch_headers, data=json.dumps(query))
-            start_course = r.json()["next_cursor"]
-            pages.append(r.json()['results'])
+    def query_database_page_list(self,query=None):
+        results_list = self.query_database(query)
+        results = [Page(self.Bot, col['id'],parent=self) for col in results_list]
+        return results
 
-        result_list = {p: [] for p in self.properties}
-        for p in pages:
-            for col in p:
-                data = Database.properties_data(col['properties'])
-                for t, v in data.items():
-                    result_list[t].append(v)
+    def query_database_dataframe(self, query: Query = None):
+        result_list = self.query_database(query)
+        result = {p: [] for p in self.properties}
+        for col in result_list:
+            data = Database.properties_data(col['properties'])
+            for t, v in data.items():
+                result[t].append(v)
+        return result
 
-        return result_list
-
-
-    # def update_database(self, block_id, data):
-    #     url = self.page.url + block_id
-    #     requests.patch(url, headers=self.page.patch_headers,data=json.dumps(data))
 
     def make_post(self, data):
         text = {

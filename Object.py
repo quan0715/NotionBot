@@ -1,34 +1,62 @@
 from enum import Enum
 from PyNotion.syntax import *
 
-class LinkObject:
-    def __init__(self, url: str = ""):
-        self.url = ""
-        self.template = {}
-        if url:
-            self.set_url(url)
 
-    def set_url(self, url: str):
-        """
-        :type url: str
-        """
-        self.url = url
-        self.template = {"type": "url", "url": self.url}
+class Filters:
+    def __init__(self, filters):
+        self.template = filters.template
 
 
-class property_filter_object:
-    def __init__(self, property: str, filter_type: str, condition: str, target):
-        self.property = property
+class PropertyFilter:
+    def __init__(self, prop: str, filter_type: str, condition: str, target):
+        self.property = prop
         self.filter_type = filter_type
         self.condition = condition
         self.target = target
         self.template = {"property": self.property, self.filter_type: {self.condition: self.target}}
 
-class condition_filter_object:
-    def __init__(self, operator, filter_object_list):
+
+class ConditionFilters:
+    def __init__(self, operator, filter_list):
         self.operator = operator
-        self.filter_object_list = filter_object_list
-        self.template = {self.operator: [f.template for f in self.filter_object_list]}
+        self.filter_list = filter_list
+        self.template = {self.operator: [f.template for f in self.filter_list]}
+
+
+class Sorts:
+    def __init__(self, sort_list: list):
+        self.template = [t.template for t in sort_list]
+
+
+class SortObject:
+    def __init__(self, prop,direction="ascending"):
+        self.property = prop
+        self.direction = direction
+        self.template = {
+            "property": self.property,
+            "direction": self.direction,
+        }
+
+
+class Query:
+    def __init__(self, filters=None, sorts: Sorts = None, start_cursor: str = None, page_size: int = None):
+        self.filters = filters
+        self.sorts = sorts
+        self.start_cursor = start_cursor
+        self.page_size = page_size
+        self.template = self.make_template()
+
+    def make_template(self):
+        template = {}
+        if self.filters:
+            template["filter"] = self.filters.template
+        if self.sorts:
+            template["sorts"] = self.sorts.template
+        if self.start_cursor:
+            template["start_cursor"] = self.start_cursor
+        if self.page_size:
+            template["page_size"] = self.page_size
+        return template
 
 
 
@@ -148,3 +176,16 @@ class Emoji_object:
     def get_json(self):
         return self.emoji_json
 
+class LinkObject:
+    def __init__(self, url: str = ""):
+        self.url = ""
+        self.template = {}
+        if url:
+            self.set_url(url)
+
+    def set_url(self, url: str):
+        """
+        :type url: str
+        """
+        self.url = url
+        self.template = {"type": "url", "url": self.url}
