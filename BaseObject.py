@@ -14,10 +14,6 @@ class BaseObject:
         self.bot = bot
         self.object_id = object_id
 
-    def retrieve(self, url):
-        r = requests.get(url, headers=self.bot.headers)
-        return r.json()
-
     @classmethod
     def properties_data(cls, json_data):
         result = {}
@@ -47,11 +43,16 @@ class Page(BaseObject):
     def __init__(self, bot, page_id, parent=None):
         super().__init__(bot, page_id)
         self.page_url = super().PageAPI + self.object_id
+        self.page_property = self.page_url + "/properties/"
         self.patch_url = f"https://api.notion.com/v1/blocks/{self.object_id}/children"
         self.parent = parent
 
-    def retrieve(self, **kwargs):
-        return super().retrieve(self.page_url)
+    def retrieve_property_item(self,property_id):
+        r = requests.get(url=self.page_property+property_id, headers=self.bot.headers)
+        return r.json()
+
+    def retrieve(self):
+        return self.bot.retrieve(self.page_url)
 
     def retrieve_page_data(self):
         # database only
@@ -68,7 +69,8 @@ class Page(BaseObject):
         r = requests.patch(self.patch_url, headers=self.bot.patch_headers, data=json.dumps(children_template))
         return r.json()
 
-    def update_page(self, data):
+    def update(self, data):
+        data = data if isinstance(data, str) else json.dumps(data)
         r = requests.patch(self.page_url, headers=self.bot.patch_headers, data=json.dumps(data))
         return r.json()
 
@@ -134,16 +136,16 @@ class Database(BaseObject):
         # get database properties
         r = requests.get(self.database_url, headers=self.bot.patch_headers)
         result_dict = r.json()['properties']
-        result = {key: result_dict[key]['type'] for key in result_dict.keys()}
+        result = {key: {"type": result_dict[key]['type'], "id": result_dict[key]['id']} for key in result_dict.keys()}
         return result
 
     def retrieve_database(self):
         r = requests.get(self.database_url, headers=self.bot.headers)
         result_dict = r.json()['properties']
-        properties = {key: result_dict[key]['type'] for key in result_dict.keys()}
+        result = {key: {"type": result_dict[key]['type'], "id": result_dict[key]['id']} for key in result_dict.keys()}
         parent_type = r.json()['parent']['type']
         parent_id = r.json()['parent'][parent_type]
-        return r.json(), properties, ParentObject(parent_type, parent_id)
+        return r.json(), result, ParentObject(parent_type, parent_id)
 
     def query_database(self, query=None):
         pages = []
@@ -177,38 +179,34 @@ class Database(BaseObject):
                 result[t].append(v)
         return result
 
-    def post_template(self, data):
-        text = {
+    def post_template(self, data: dict[str:str]) -> dict:
+        prop_dict = {}
+        for prop, value in data.items():
+            value_type = self.properties[prop]['type']
+            if value_type == Text.Type.title or value_type == Text.Type.rich_text:
+                t = TextObject(content=value).object_array
+                prop_dict[prop] = {f'{value_type}': t}
+            if value_type == Number.Type.number:
+                if type(value) == str:
+                    if value == '':
+                        value = "-1"
+                    if value.endswith('%'):
+                        value = value.split('%')[0]
+                    value = eval(value)
+                prop_dict[prop] = {'type': value_type, value_type: value}
+
+            if value_type == Select.Type.select:
+                prop_dict[prop] = {'type': 'select', 'select': {'name': value}}
+
+            if value_type == 'url':
+                prop_dict[prop] = LinkObject(value).template
+
+            if value_type == 'date':
+                prop_dict[prop]['type'] = {'type': 'date', 'date': value}
+
+        return {
             'parent': ParentObject(ParentType.database, self.object_id).template,
             'archived': False,
-            'properties': {}
+            'properties': prop_dict
         }
-        for prop in data.keys():
-            if self.properties[prop] in ['title', 'rich_text']:
-                t = TextObject(content=data[prop]).object_array
-                text['properties'][prop] = {f'{self.properties[prop]}': t}
-            if self.properties[prop] == 'number':
-                n = data[prop]
-                if type(n) == str:
-                    if n == '':
-                        n = "-1"
-                    if n.endswith('%'):
-                        n = n.split('%')[0]
-                    n = eval(n)
-                text['properties'][prop] = {'type': 'number', 'number': n}
 
-            if self.properties[prop] == 'select':
-                text['properties'][prop] = {
-                    'type': 'select',
-                    'select': {'name': data[prop]}
-                }
-
-            if self.properties[prop] == 'url':
-                text['properties'][prop] = LinkObject(data[prop]).template
-
-            if self.properties[prop] == 'date':
-                text['properties'][prop] = {
-                    'type': 'date', 'date': data[prop]
-                }
-
-        return text
