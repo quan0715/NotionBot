@@ -97,7 +97,7 @@ class NumberProperty(PropertyBase):
 
 
 class SelectProperty(PropertyBase):
-    def __init__(self, select_type =Select.Type.select, option_list=[]):
+    def __init__(self, select_type=Select.Type.select, option_list =[]):
         super().__init__(select_type)
         self.template[self.type] = {"options": [{"name": o[0], "color": o[1]} for o in option_list]}
 

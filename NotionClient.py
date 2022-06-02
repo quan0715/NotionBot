@@ -103,17 +103,16 @@ class Notion:
             'properties': {}
         }
 
-    def create_new_database(self, title: str, parent: Page, properties: PropertyObject):
+    def create_new_database(self, title: str, parent: Page, property_object: PropertyObject):
         """
+        :param property_object: PropertyObject: properties name and their corresponding value type
         :param title: str object, set the title of the database, request
-        :param icon : icon of your database
         :param parent: Page, set the database parent in which page
-        :param properties: PropertyObject: properties name and their corresponding value type
         """
         template = {
             "parent": ParentObject(parent_type=ParentType.page_id, parent_id=parent.object_id).template,
             "title": TextObject(content=title).template,
-            "properties": properties.get_template(),
+            "properties": property_object.get_template(),
         }
         #print(template)
         r = requests.post(Database.database_api, headers=self.patch_headers, data=json.dumps(template))
