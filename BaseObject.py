@@ -69,7 +69,9 @@ class Page(BaseObject):
 
     def update(self, data):
         data = data if isinstance(data, str) else json.dumps(data)
-        r = requests.patch(self.page_url, headers=self.bot.patch_headers, data=json.dumps(data))
+        r = requests.patch(self.page_url, headers=self.bot.patch_headers, data=data)
+        if r.status_code != 200:
+            print(r.json()['message'])
         return r.json()
 
     def update_emoji(self, emoji: str):
@@ -87,13 +89,13 @@ class Page(BaseObject):
 
 class Database(BaseObject):
     database_api = "https://api.notion.com/v1/databases/"
+
     def __init__(self, bot, database_id: str):
         super().__init__(bot,database_id)
         self.database_url = Database.database_api + database_id
         self.database_query_url = f'{self.database_url}/query'
         self.result_list = self.query_database()
         self.database_detail, self.properties, self.parent = self.retrieve_database()
-
 
     def post(self, data):
         data = data if isinstance(data,str) else json.dumps(data)
@@ -121,7 +123,8 @@ class Database(BaseObject):
 
     def query_database(self, query=None):
         pages = []
-        q = query.template if query else {"page_size": 100}
+        query = query if query else Query(page_size=100)
+        q = query.make_template()
         r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
         pages.append(r.json()["results"])
         start_course = r.json()["next_cursor"]
@@ -131,6 +134,8 @@ class Database(BaseObject):
                 query.page_size = 100
                 q = query.make_template()
                 r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
+                pages.append(r.json()["results"])
+                start_course = r.json()["next_cursor"]
         pages_list = []  # list of page
         for p in pages:
             for col in p:
@@ -174,7 +179,7 @@ class Database(BaseObject):
                 prop_dict[prop] = LinkObject(value).template
 
             if value_type == 'date':
-                prop_dict[prop]['type'] = {'type': 'date', 'date': value}
+                prop_dict[prop] = {'type': 'date', 'date': value}
 
         return {
             'parent': ParentObject(ParentType.database, self.object_id).template,

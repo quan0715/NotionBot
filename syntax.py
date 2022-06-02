@@ -76,7 +76,7 @@ class Text:
         title = "title"
         rich_text = "rich_text"
 
-    class TextFilter(str, Enum):
+    class Filter(str, Enum):
         # "title", "rich_text", "url", "email", and "phone_number"
         # Only return pages where the page property value matches the provided value exactly.
         equals = "equals"

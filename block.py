@@ -21,6 +21,7 @@ from PyNotion.Object import RichTextObject
 "table"
 """
 
+
 class Block:
     def __init__(self, block_id, parent):
         self.block_id = block_id
@@ -37,7 +38,7 @@ class Block:
         template = {"children": []}
 
 
-class text_block(Block):
+class TextBlock(Block):
     def __init__(self, block_id, parent):
         super().__init__(block_id, parent)
         self.content = self.retrieve_block()
@@ -89,7 +90,7 @@ class CodeBlock(Block):
         requests.patch(self.block_url, headers=self.parent.patch_headers, data=json.dumps(self.template))
 
 
-class Embed_block(Block):
+class EmbedBlock(Block):
     def __init__(self, block_id, parent, embed_url):
         super().__init__(block_id, parent)
         self.embed_url = embed_url

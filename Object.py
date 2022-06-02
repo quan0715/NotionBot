@@ -2,11 +2,6 @@ from enum import Enum
 from PyNotion.syntax import *
 
 
-class Filters:
-    def __init__(self, filters):
-        self.template = filters.template
-
-
 class PropertyFilter:
     def __init__(self, prop: str, filter_type: str, condition: str, target):
         self.property = prop
@@ -117,9 +112,6 @@ class UrlProperty(PropertyBase):
         super().__init__("url")
 
 
-
-
-
 class RichTextObject:
     def __init__(self, text_feature: dict = None, plain_text: str = "", href: str = ""):
         '''
@@ -162,6 +154,8 @@ class RichTextObject:
         self.href = href
         self.template[0]["href"] = self.href
 
+class TextBlockObject(RichTextObject):
+
 
 class TextObject(RichTextObject):
     def __init__(self, text_feature=None, content="", link=None):
@@ -190,7 +184,6 @@ class PropertyObject:
 
     def get_template(self):
         return self.template
-
 
 
 class BlockObject:

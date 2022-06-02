@@ -83,7 +83,7 @@ class Notion:
 
     def create_new_page(self, data, database=None):
         if database:
-            p = database.post(self, database.make_post(data))
+            p = database.post(database.post_template(data))
         else:
             p = Page.create_page(self, data)
         return p
