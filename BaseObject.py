@@ -1,15 +1,44 @@
 from PyNotion import *
 from PyNotion.Object import *
-from abc import ABC, abstractmethod
-
-
-# from PyNotion.NotionClient import Notion
 
 
 class BaseObject:
+    BlockAPI = "https://api.notion.com/v1/blocks/"
+    DatabaseAPI = "https://api.notion.com/v1/databases/"
+    PageAPI = 'https://api.notion.com/v1/pages/'
+
     def __init__(self, bot, object_id):
         self.bot = bot
         self.object_id = object_id
+
+    def retrieve(self, url):
+        r = requests.get(url, headers=self.bot.headers)
+        return r.json()
+
+    def update(self, url, data):
+        data = data if isinstance(data, str) else json.dumps(data)
+        r = requests.patch(url, headers=self.bot.patch_headers, data=data)
+        if r.status_code != 200:
+            print(r.json()['message'])
+        return r.json()
+
+    def delete_object(self):
+        url = self.__class__.BlockAPI + self.object_id
+        r = requests.delete(url, headers=self.bot.headers)
+        return r.json()
+
+    def retrieve_children(self):
+        url = BaseObject.BlockAPI + self.object_id + "/children"
+        r = requests.get(url, headers=self.bot.headers)
+        return r.json()
+
+    def append_children(self, data):
+        url = BaseObject.BlockAPI + self.object_id + "/children"
+        data = data if isinstance(data, str) else json.dumps(data)
+        r = requests.patch(url, headers=self.bot.patch_headers, data=data)
+        if r.status_code != 200:
+            print(r.json()['message'])
+        return r.json()
 
     @classmethod
     def properties_data(cls, json_data):
@@ -37,10 +66,9 @@ class BaseObject:
 
 
 class Page(BaseObject):
-    PageAPI = 'https://api.notion.com/v1/pages/'
     def __init__(self, bot, page_id, parent=None):
         super().__init__(bot, page_id)
-        self.page_url = Page.PageAPI + self.object_id
+        self.page_url = BaseObject.PageAPI + self.object_id
         self.page_property = self.page_url + "/properties/"
         self.patch_url = f"https://api.notion.com/v1/blocks/{self.object_id}/children"
         self.parent = parent
@@ -49,8 +77,8 @@ class Page(BaseObject):
         r = requests.get(url=self.page_property+property_id, headers=self.bot.headers)
         return r.json()
 
-    def retrieve(self):
-        return self.bot.retrieve(self.page_url)
+    def retrieve(self, **kwargs):
+        return super().retrieve(self.page_url)
 
     def retrieve_page_data(self):
         # database only
@@ -67,15 +95,16 @@ class Page(BaseObject):
         r = requests.patch(self.patch_url, headers=self.bot.patch_headers, data=json.dumps(children_template))
         return r.json()
 
-    def update(self, data):
-        data = data if isinstance(data, str) else json.dumps(data)
-        r = requests.patch(self.page_url, headers=self.bot.patch_headers, data=data)
-        if r.status_code != 200:
-            print(r.json()['message'])
-        return r.json()
+    def update(self, data, **kwargs):
+        return super().update(self.page_url, data)
+        # data = data if isinstance(data, str) else json.dumps(data)
+        # r = requests.patch(self.page_url, headers=self.bot.patch_headers, data=data)
+        # if r.status_code != 200:
+        #     print(r.json()['message'])
+        # return r.json()
 
     def update_emoji(self, emoji: str):
-        return self.update(EmojiObject(emoji).get_json())
+        return self.update(EmojiObject(emoji).get_json(), )
 
     @classmethod
     def create_page(cls, bot, data):
@@ -88,14 +117,18 @@ class Page(BaseObject):
 
 
 class Database(BaseObject):
-    database_api = "https://api.notion.com/v1/databases/"
-
     def __init__(self, bot, database_id: str):
-        super().__init__(bot,database_id)
-        self.database_url = Database.database_api + database_id
+        super().__init__(bot, database_id)
+        self.database_url = BaseObject.DatabaseAPI + database_id
         self.database_query_url = f'{self.database_url}/query'
         self.result_list = self.query_database()
-        self.database_detail, self.properties, self.parent = self.retrieve_database()
+        self.database_detail, self.properties, self.parent = self.database_detail()
+
+    def retrieve(self, **kwargs):
+        return super().retrieve(self.database_url)
+
+    def update(self, data, **kwargs):
+        return super().update(self.database_url, data)
 
     def post(self, data):
         data = data if isinstance(data,str) else json.dumps(data)
@@ -113,13 +146,13 @@ class Database(BaseObject):
         result = {key: {"type": result_dict[key]['type'], "id": result_dict[key]['id']} for key in result_dict.keys()}
         return result
 
-    def retrieve_database(self):
-        r = requests.get(self.database_url, headers=self.bot.headers)
-        result_dict = r.json()['properties']
+    def database_detail(self):
+        r = self.retrieve()
+        result_dict = r['properties']
         result = {key: {"type": result_dict[key]['type'], "id": result_dict[key]['id']} for key in result_dict.keys()}
-        parent_type = r.json()['parent']['type']
-        parent_id = r.json()['parent'][parent_type]
-        return r.json(), result, ParentObject(parent_type, parent_id)
+        parent_type = r['parent']['type']
+        parent_id = r['parent'][parent_type]
+        return r, result, ParentObject(parent_type, parent_id)
 
     def query_database(self, query=None):
         pages = []
@@ -186,4 +219,18 @@ class Database(BaseObject):
             'archived': False,
             'properties': prop_dict
         }
+
+
+class Block(BaseObject):
+    def __init__(self, bot, block_id):
+        super().__init__(bot, block_id)
+        self.block_url = BaseObject.BlockAPI + self.object_id
+        self.children_url = f'{self.block_url}/children'
+
+    def retrieve(self, **kwargs):
+        return super().retrieve(self.block_url)
+
+    def update(self, data, **kwargs):
+        return super().update(self.block_url, data)
+
 

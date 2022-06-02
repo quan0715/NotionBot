@@ -154,7 +154,9 @@ class RichTextObject:
         self.href = href
         self.template[0]["href"] = self.href
 
+
 class TextBlockObject(RichTextObject):
+    pass
 
 
 class TextObject(RichTextObject):

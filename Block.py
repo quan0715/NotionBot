@@ -1,7 +1,7 @@
 import PyNotion.template as tp
 from PyNotion import *
 from PyNotion.Object import RichTextObject
-
+from PyNotion.BaseObject import  BaseObject
 """
 "bulleted_list_item",
 "numbered_list_item", 
@@ -20,6 +20,10 @@ from PyNotion.Object import RichTextObject
 "header_3",
 "table"
 """
+
+
+
+
 
 
 class Block:

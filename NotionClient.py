@@ -1,5 +1,6 @@
 from PyNotion import *
 from PyNotion import Database, Page
+from PyNotion.BaseObject import *
 from PyNotion.Object import *
 
 
@@ -38,15 +39,11 @@ class Notion:
             print("Connect failed please request again !!!")
             return None
 
-    def retrieve(self, url):
-        r = requests.get(url, headers=self.headers)
-        return r.json()
-
-    def fetch_databases(self, title):
+    def fetch_databases(self, title, page_size=1):
         payload = {
             'query': f'{title}',
             'filter': {'value': 'database', 'property': 'object'},
-            'page_size': 100
+            'page_size': page_size
         }
         response = requests.request("POST", self.search_url, json=payload, headers=self.patch_headers)
         if response.json()['results']:
@@ -61,11 +58,11 @@ class Notion:
             print(f"Can't find DataBase {title}")
             return None
 
-    def fetch_page(self, title):
+    def fetch_page(self, title, page_size=1):
         payload = {
             'query': f'{title}',
             'filter': {'value': 'page', 'property': 'object'},
-            'page_size': 100
+            'page_size': page_size
         }
         response = requests.post(self.search_url, json=payload, headers=self.patch_headers)
         # print(response.json())
@@ -81,6 +78,11 @@ class Notion:
 
         return None
 
+    def fetch_block(self, block_id):
+        if block_id.startswith("https://www.notion.so/"):
+            block_id = block_id.split("#")[-1]
+        return Block(bot=self, block_id=block_id)
+
     def create_new_page(self, data, database=None):
         if database:
             p = database.post(database.post_template(data))
@@ -94,7 +96,7 @@ class Notion:
     def update_page(self,target, data):
         if isinstance(target.parent, Database):
             data = target.parent.post_template(data)
-        target.update(data)
+        target.update(data, )
 
     def create_post_template(self, target, data):
         template = {
@@ -115,7 +117,7 @@ class Notion:
             "properties": property_object.get_template(),
         }
         #print(template)
-        r = requests.post(Database.database_api, headers=self.patch_headers, data=json.dumps(template))
+        r = requests.post(BaseObject.DatabaseAPI, headers=self.patch_headers, data=json.dumps(template))
         if r.status_code == 200:
             print(f"database {title} 創建成功,你可以在 page_id {parent.object_id} 找到他")
             return r.json()
