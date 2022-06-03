@@ -204,6 +204,7 @@ class PropertyObject:
         return self.template
 
 
+
 class BaseBlockObject:
     def __init__(self, block_type, color=Colors.Text.default, text_block=None, children=None):
         self.block_type = block_type
@@ -233,12 +234,24 @@ class BaseBlockObject:
             self.template[self.block_type].update(children.get_template())
 
 
+class LinkObject:
+    def __init__(self,link=None):
+        self.type = "url"
+        self.link = link
+        self.template = {"type":self.type,self.type:link}
+
+    def get_template(self):
+        return  self.template
+
+
 class TextBlockObject(BaseBlockObject):
     def __init__(self, content="This is Text", link=None):
         super().__init__(block_type="text", text_block=None)
         self.content = content
         self.link = link
-        self.template[self.block_type] = {"content": self.content, "link": self.link}
+        self.template[self.block_type] = {"content": self.content}
+        if isinstance(link, str):
+            self.template[self.block_type].update(dict(link=LinkObject(self.link).template))
 
 
 # class RichTextObject:

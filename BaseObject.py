@@ -37,7 +37,7 @@ class BaseObject:
             data = json.dumps(data)
         elif not isinstance(data, str):
             data = json.dumps(data.get_template())
-        print(data)
+        #print(data)
         url = BaseObject.BlockAPI + self.object_id + "/children"
         r = requests.patch(url, headers=self.bot.patch_headers, data=data)
         if r.status_code != 200:
