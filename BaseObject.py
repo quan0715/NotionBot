@@ -42,6 +42,8 @@ class BaseObject:
         r = requests.patch(url, headers=self.bot.patch_headers, data=data)
         if r.status_code != 200:
             print(r.json()['message'])
+        else:
+            pass
         return r.json()
 
     @classmethod
@@ -75,6 +77,7 @@ class Page(BaseObject):
         self.page_url = BaseObject.PageAPI + self.object_id
         self.page_property = self.page_url + "/properties/"
         self.patch_url = f"https://api.notion.com/v1/blocks/{self.object_id}/children"
+        self.parent_root = ParentObject(parent_type=ParentType.page_id, parent_id=self.object_id)
         self.parent = parent
 
     def retrieve_property_item(self,property_id):
@@ -94,11 +97,6 @@ class Page(BaseObject):
         result = super().properties_data(properties)
         return result
 
-    def append_block(self, children_array=None):
-        children_template = {"children": children_array}
-        r = requests.patch(self.patch_url, headers=self.bot.patch_headers, data=json.dumps(children_template))
-        return r.json()
-
     def update(self, data, **kwargs):
         return super().update(self.page_url, data)
         # data = data if isinstance(data, str) else json.dumps(data)
@@ -110,15 +108,31 @@ class Page(BaseObject):
     def update_emoji(self, emoji: str):
         return self.update(EmojiObject(emoji).get_json(), )
 
-    @classmethod
-    def create_page(cls, bot, data):
-        r = requests.post(cls.PageAPI, headers=bot.patch_headers, data=json.dumps(data))
+    def create_page(self, data):
+        r = requests.post(Page.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data))
         try:
-            return Page(bot=bot, page_id=str(r.json()['id']))
+            return Page(bot=self.bot, page_id=str(r.json()['id']))
         except KeyError:
-            print("create faild")
+            print("create failed")
             return r.json()
 
+    def create_database(self, title, properties=None):
+        template = dict(
+            parent=self.parent_root.template,
+            title=TextObject(content=title).template
+        )
+        if isinstance(properties, PropertyObject):
+            template.update(dict(properties=properties.get_template()))
+        else:
+            properties = PropertyObject({"UnTitle": TitleProperty()})
+            template.update(dict(properties=properties.get_template()))
+
+        r = requests.post(BaseObject.DatabaseAPI, headers=self.bot.patch_headers, data=json.dumps(template))
+        if r.status_code == 200:
+            print(f"database {title} 創建成功,你可以在 page_id {self.object_id} 找到他")
+            return r.json()
+        else:
+            print(r.json()['message'])
 
 class Database(BaseObject):
     def __init__(self, bot, database_id: str):

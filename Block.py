@@ -1,6 +1,5 @@
 import PyNotion.template as tp
 from PyNotion import *
-from PyNotion.Object import RichTextObject
 from PyNotion.BaseObject import  BaseObject
 """
 "bulleted_list_item",

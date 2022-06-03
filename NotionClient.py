@@ -98,14 +98,8 @@ class Notion:
             data = target.parent.post_template(data)
         target.update(data, )
 
-    def create_post_template(self, target, data):
-        template = {
-            'parent': ParentObject(target.type, target.id).template,
-            'archived': False,
-            'properties': {}
-        }
 
-    def create_new_database(self, title: str, parent: Page, property_object: PropertyObject):
+    def create_new_database(self, title: str, parent: Page, property_object):
         """
         :param property_object: PropertyObject: properties name and their corresponding value type
         :param title: str object, set the title of the database, request
@@ -114,8 +108,12 @@ class Notion:
         template = {
             "parent": ParentObject(parent_type=ParentType.page_id, parent_id=parent.object_id).template,
             "title": TextObject(content=title).template,
-            "properties": property_object.get_template(),
         }
+        if isinstance(property_object, PropertyObject):
+            template.update(dict(properties=property_object.get_template()))
+        else:
+            template.update(dict(properties=PropertyObject({"UnTitle": TitleProperty()}).get_template()))
+        #print(template)
         #print(template)
         r = requests.post(BaseObject.DatabaseAPI, headers=self.patch_headers, data=json.dumps(template))
         if r.status_code == 200:
