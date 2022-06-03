@@ -33,8 +33,12 @@ class BaseObject:
         return r.json()
 
     def append_children(self, data):
+        if isinstance(data, dict):
+            data = json.dumps(data)
+        elif not isinstance(data, str):
+            data = json.dumps(data.get_template())
+        print(data)
         url = BaseObject.BlockAPI + self.object_id + "/children"
-        data = data if isinstance(data, str) else json.dumps(data)
         r = requests.patch(url, headers=self.bot.patch_headers, data=data)
         if r.status_code != 200:
             print(r.json()['message'])

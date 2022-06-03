@@ -54,8 +54,18 @@ class Query:
         return template
 
 
+class Option:
+    def __init__(self, name, color=Colors.Option.default):
+        self.name = name
+        self.color = color
+        self.template = {"name": self.name, "color": self.color}
+
+    def get_template(self):
+        return self.template
+
+
 class ParentObject:
-    def __init__(self, parent_type:str, parent_id):
+    def __init__(self, parent_type: str, parent_id):
         self.parent_type = parent_type
         self.parent_id = parent_id
         self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
@@ -65,11 +75,15 @@ class ParentObject:
 
 
 class ChildrenObject:
-    pass
+    def __init__(self, *children):
+        self.template = {"children": [a.get_template() for a in children]}
+
+    def get_template(self):
+        return self.template
 
 
 class PropertyBase:
-    def __init__(self, prop_type:str):
+    def __init__(self, prop_type: str):
         self.type = prop_type
         self.template = {self.type: {}}
 
@@ -92,8 +106,14 @@ class NumberProperty(PropertyBase):
 
 
 class SelectProperty(PropertyBase):
-    def __init__(self, select_type=Select.Type.select, option_list =[]):
-        super().__init__(select_type)
+    def __init__(self, *option_list: Option):
+        super().__init__(Select.Type.select)
+        self.template[self.type] = {"options": [option.get_template() for option in option_list]}
+
+
+class MultiSelectProperty(PropertyBase):
+    def __init__(self, *option_list):
+        super().__init__(Select.Type.multi_select)
         self.template[self.type] = {"options": [{"name": o[0], "color": o[1]} for o in option_list]}
 
 
@@ -131,7 +151,7 @@ class RichTextObject:
                 'strikethrough': False,
                 'underline': False,
                 'code': False,
-                'color': TextColor.default.value
+                'color': Colors.Text.default
             },
             "plain_text": self.plain_text,
             "href": self.href if self.href else "null"
@@ -153,10 +173,6 @@ class RichTextObject:
     def update_href(self, href):
         self.href = href
         self.template[0]["href"] = self.href
-
-
-class TextBlockObject(RichTextObject):
-    pass
 
 
 class TextObject(RichTextObject):
@@ -186,6 +202,36 @@ class PropertyObject:
 
     def get_template(self):
         return self.template
+
+
+class BaseBlockObject:
+    def __init__(self, block_type):
+        self.block_type = block_type
+        self.template = {"type": self.block_type, self.block_type: {}}
+
+    def get_template(self):
+        return self.template
+
+
+class TextBlockObject(BaseBlockObject):
+    def __init__(self, content="This is Text", link=None):
+        super().__init__("text")
+        self.content = content
+        self.link = link
+        self.template[self.block_type] = {"content": self.content, "link": self.link}
+
+
+class ParagraphBlockObject(BaseBlockObject):
+    def __init__(self, *text_block):
+        super().__init__("paragraph")
+        self.color = Colors.Text.orange
+        if len(text_block):
+            self.rich_text_list = [t.get_template() for t in text_block]
+        else:
+            self.rich_text_list = [TextBlockObject().get_template()]
+        self.template[self.block_type]["rich_text"] = self.rich_text_list
+        #self.template['color'] = self.color
+        self.template['object'] = "block"
 
 
 class BlockObject:
