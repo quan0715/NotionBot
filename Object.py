@@ -215,7 +215,7 @@ class BaseBlockObject:
         if not isinstance(self, TextBlockObject):
             self.text_block = text_block if text_block else [TextBlockObject(self.default_text)]
             self.template[self.block_type] = self.rich_text(self.text_block)
-            if not isinstance(self,CodeBlockObject):
+            if not isinstance(self, CodeBlockObject):
                 self.template[self.block_type].update(dict(color=self.color))
 
     def get_template(self):
@@ -243,6 +243,15 @@ class LinkObject:
     def get_template(self):
         return  self.template
 
+
+class FileObject:
+    def __init__(self, url, file_type=File.Type.external):
+        self.url = url
+        self.file_type = file_type
+        self.template = dict(type=self.file_type)
+        self.template[self.file_type] = (dict(url=self.url))
+    def get_template(self):
+        return self.template
 
 class TextBlockObject(BaseBlockObject):
     def __init__(self, content="This is Text", link=None):
@@ -333,18 +342,113 @@ class CodeBlockObject(BaseBlockObject):
         self.template[self.block_type].update(dict(language=language))
 
 
-class ChildPageBlock(BaseBlockObject):
+class ChildPageBlockObject(BaseBlockObject):
     def __init__(self, title="child_page"):
         super().__init__("child_page")
         self.title = title
         self.template[self.block_type] = dict(title=title)
 
 
-class ChildDataBaseBlock(BaseBlockObject):
+class ChildDataBaseBlockObject(BaseBlockObject):
     def __init__(self, title="child_database"):
         super().__init__("child_database")
         self.title = title
         self.template[self.block_type] = dict(title=title)
+
+
+class EmbedBlockObject(BaseBlockObject):
+    def __init__(self, url):
+        super().__init__("embed")
+        self.url = url
+        self.template[self.block_type] = dict(url=self.url)
+
+
+class ImageBlockObject(BaseBlockObject):
+    block_json_type = "file"
+
+    def __init__(self, file=None):
+        super().__init__("image")
+        del self.template[self.block_type]['rich_text']
+        del self.template[self.block_type]['color']
+        self.file = file
+        if isinstance(file, FileObject):
+            self.template[self.block_type] = self.file.get_template()
+
+
+class VideoBlockObject(BaseBlockObject):
+    block_json_type = "file"
+
+    def __init__(self, file):
+        super().__init__("video")
+        self.file = file
+        self.template[self.block_type] = self.file.get_template()
+
+
+class FileBlockObject(BaseBlockObject):
+    block_json_type = "file"
+
+    def __init__(self, file=None):
+        super().__init__("file")
+        self.file = file
+        self.template[self.block_type] = self.file.get_template()
+
+
+class PDFBlockObject(BaseBlockObject):
+    block_json_type = "file"
+    def __init__(self, file):
+        super().__init__("pdf")
+        self.file = file
+        del self.template[self.block_type]['rich_text']
+        del self.template[self.block_type]['color']
+        self.template[self.block_type] = self.file.get_template()
+
+
+class BookmarkBlockObject(BaseBlockObject):
+    def __init__(self, caption=None, url=None):
+        super().__init__("bookmark")
+        del self.template[self.block_type]['rich_text']
+        del self.template[self.block_type]['color']
+        self.caption = caption
+        self.url = url
+        self.template[self.block_type].update(dict(url=self.url))
+        if isinstance(self.caption, TextBlockObject):
+            self.template[self.block_type].update(BaseBlockObject.caption(self.caption))
+
+
+class EquationBlockObject(BaseBlockObject):
+    def __init__(self, expression):
+        super().__init__("equation")
+        self.expression = expression
+        self.template[self.block_type].update(dict(expression=self.expression))
+        del self.template[self.block_type]['rich_text']
+        del self.template[self.block_type]['color']
+
+class DividerBlockObject(BaseBlockObject):
+    def __init__(self):
+        super().__init__("divider")
+        del self.template[self.block_type]['rich_text']
+        del self.template[self.block_type]['color']
+
+
+class TableOfContentBlockObject(BaseBlockObject):
+    def __init__(self, color=Colors.Text.default):
+        super().__init__("table_of_contents", color=color)
+
+
+class BreadcrumbBlockObject(BaseBlockObject):
+    def __init__(self, expression):
+        super().__init__("breadcrumb")
+
+
+class ColumListBlockObject(BaseBlockObject):
+    #parent block for column children
+    def __init__(self, children=None):
+        super().__init__("column_list", children)
+
+
+class ColumnBlockObject(BaseBlockObject):
+    def __init__(self, children=None):
+        super().__init__("column", children)
 
 
 class Blocks:
@@ -358,6 +462,16 @@ class Blocks:
     Callout = CalloutBlockObject
     Quote = QuoteBlockObject
     Text = TextBlockObject
+    Embed = EmbedBlockObject
+    Image = ImageBlockObject
+    Video = VideoBlockObject
+    PDF = PDFBlockObject
+    Bookmark = BookmarkBlockObject
+    Equation = EquationBlockObject
+    Divider = DividerBlockObject
+    File = FileBlockObject
+    TableOfContent = TableOfContentBlockObject
+    Breadcrumb = BreadcrumbBlockObject
 
 
 

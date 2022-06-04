@@ -194,3 +194,7 @@ class Colors:
         pink = "pink_background"
         red = "red_background"
 
+class File:
+    class Type(str, Enum):
+        file = "file"
+        external = "external"
