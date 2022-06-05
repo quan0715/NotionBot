@@ -82,7 +82,7 @@ class Page(BaseObject):
         self.page_url = BaseObject.PageAPI + self.object_id
         self.page_property = self.page_url + "/properties/"
         self.patch_url = f"https://api.notion.com/v1/blocks/{self.object_id}/children"
-        self.parent_root = ParentObject(parent_type=ParentType.page_id, parent_id=self.object_id)
+        self.parent_root = ParentObject(parent_type=ParentType.page, parent_id=self.object_id)
         self.parent = parent
 
     def retrieve_property_item(self,property_id):

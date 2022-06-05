@@ -70,6 +70,9 @@ class ParentObject:
         self.parent_id = parent_id
         self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
 
+    def get_template(self):
+        return self.template
+
     def make_template(self):
         self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
 
@@ -213,12 +216,6 @@ class BaseBlockObject:
         self.default_text = f"{self.block_type}"
         self.text_block = text_block
 
-        # if not isinstance(self, TextBlockObject):
-        #     self.text_block = text_block if text_block else [TextBlockObject(self.default_text)]
-        #     self.template[self.block_type] = self.rich_text(self.text_block)
-        #     if not isinstance(self, CodeBlockObject):
-        #         self.template[self.block_type].update(dict(color=self.color))
-
     def get_template(self):
         return self.template
 
@@ -259,10 +256,10 @@ class BaseBlockObject:
 
 
 class LinkObject:
-    def __init__(self,link=None):
+    def __init__(self, link=None):
         self.type = "url"
         self.link = link
-        self.template = {"type":self.type,self.type:link}
+        self.template = {"type": self.type, self.type: link}
 
     def get_template(self):
         return self.template
@@ -278,15 +275,15 @@ class FileObject:
     def get_template(self):
         return self.template
 
+
 class EmojiObject:
     def __init__(self, emoji):
-        #print(emoji)
+        # print(emoji)
         self.emoji = emoji
         self.template = {"type": "emoji", "emoji": self.emoji} if isinstance(self.emoji, str) else None
 
     def get_template(self) -> dict:
         return self.template
-
 
 
 class TextBlockObject(BaseBlockObject):
@@ -322,7 +319,7 @@ class HeadingBlockObject(BaseBlockObject):
 
 class CalloutBlockObject(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, emoji=None, children=None):
-        super().__init__("callout", color=color, text_block=text_block,children=children)
+        super().__init__("callout", color=color, text_block=text_block, children=children)
         self.emoji = emoji
         if isinstance(emoji, str):
             self.template[self.block_type] = dict(icon=EmojiObject(self.emoji).get_template())
@@ -468,7 +465,7 @@ class BreadcrumbBlockObject(BaseBlockObject):
 
 
 class ColumnListBlockObject(BaseBlockObject):
-    #parent block for column children
+    # parent block for column children
     def __init__(self, children=None):
         super().__init__("column_list", children=children)
         self.update_children(self.children)
@@ -492,6 +489,61 @@ class TemplateBlockObject(BaseBlockObject):
         super().__init__("template", text_block=title, children=children)
         self.update_text(title)
         self.update_children(self.children)
+
+
+class LinkToPageBlockObject(BaseBlockObject):
+    def __init__(self, target):
+        # page_id or database_id
+        super().__init__("link_to_page")
+        if isinstance(target, dict):
+            target = ParentObject(target['type'], target['id'])
+        if isinstance(target, ParentObject):
+            self.template[self.block_type] = target.get_template()
+
+
+class SyncedBlockObject(BaseBlockObject):
+    def __init__(self, synced_from=None, children=None):
+        super().__init__("synced_block", children=children)
+        self.synced_from = synced_from
+        if not self.synced_from:
+            self.template[self.block_type].update(dict(synced_from=self.synced_from))
+            self.update_children(self.children)
+        else:
+            self.template[self.block_type].update(dict(synced_from=dict(block_id=self.synced_from)))
+
+
+class TableBlockObject(BaseBlockObject):
+    def __init__(self, table_width=1, column_header=True, row_header=True, children=None):
+        super().__init__("table", children=children)
+        self.table_width = table_width
+        self.column_header = column_header
+        self.row_header = row_header
+        self.update_children(self.children)
+        self.template[self.block_type].update(
+            dict(
+                table_width=self.table_width,
+                has_column_header=self.column_header,
+                has_row_header=self.row_header,
+            )
+        )
+        row_list = self.template[self.block_type]["children"]
+        for row in row_list:
+            cells = row['table_row']['cells']
+            for i in range(self.table_width - len(cells)):
+                row['table_row']['cells'].append([TextBlockObject("").get_template()])
+
+
+class TableRowBlockObject(BaseBlockObject):
+    def __init__(self, *cells):
+        super().__init__("table_row")
+        cell_list = []
+        for cell in cells:
+            if isinstance(cell, str):
+                cell = TextBlockObject(content=cell)
+            if isinstance(cell, TextBlockObject):
+                cell_list.append([cell.get_template()])
+
+        self.template[self.block_type].update(dict(cells=cell_list))
 
 
 class Blocks:
@@ -518,7 +570,10 @@ class Blocks:
     ColumnList = ColumnListBlockObject
     ColumnBlock = ColumnBlockObject
     Template = TemplateBlockObject
-
+    LinkToPage = LinkToPageBlockObject
+    Synced = SyncedBlockObject
+    TableRow = TableRowBlockObject
+    Table = TableBlockObject
 
 
 class BlockObject:
@@ -545,7 +600,6 @@ class BlockObject:
         }
         if type(self.object) == TextObject:
             self.template[f"{self.block_type}"]["text"] = self.object.template
-
 
 
 class EmojiObject:

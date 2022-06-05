@@ -106,7 +106,7 @@ class Notion:
         :param parent: Page, set the database parent in which page
         """
         template = {
-            "parent": ParentObject(parent_type=ParentType.page_id, parent_id=parent.object_id).template,
+            "parent": ParentObject(parent_type=ParentType.page, parent_id=parent.object_id).template,
             "title": TextObject(content=title).template,
         }
         if isinstance(property_object, PropertyObject):

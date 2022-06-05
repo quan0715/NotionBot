@@ -3,7 +3,7 @@ from enum import Enum
 
 class ParentType(str, Enum):
     database = "database_id"
-    page_id = "page_id"
+    page = "page_id"
     workspace = "workspace"
 
 
