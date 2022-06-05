@@ -7,7 +7,7 @@
 ### Start using PyNotion
 ```python3
 from PyNotion.NotionClient import Notion
-AUTH = "secret_6Dxn84zjANca6LHA6jXuY1gOlcqXzQttl3kGZKNPemh" #your own integration's token
+AUTH = "your own integration's token"
 notion_bot = Notion(auth=AUTH)
 ```
 If it authenticated, it will print out `Connect to integration Quan`,otherwise `Connect failed please request again !!!`
