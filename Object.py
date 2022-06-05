@@ -204,7 +204,6 @@ class PropertyObject:
         return self.template
 
 
-
 class BaseBlockObject:
     def __init__(self, block_type, color=Colors.Text.default, text_block=None, children=None):
         self.block_type = block_type
@@ -212,14 +211,22 @@ class BaseBlockObject:
         self.color = color
         self.children = children
         self.default_text = f"{self.block_type}"
-        if not isinstance(self, TextBlockObject):
-            self.text_block = text_block if text_block else [TextBlockObject(self.default_text)]
-            self.template[self.block_type] = self.rich_text(self.text_block)
-            if not isinstance(self, CodeBlockObject):
-                self.template[self.block_type].update(dict(color=self.color))
+        self.text_block = text_block
+
+        # if not isinstance(self, TextBlockObject):
+        #     self.text_block = text_block if text_block else [TextBlockObject(self.default_text)]
+        #     self.template[self.block_type] = self.rich_text(self.text_block)
+        #     if not isinstance(self, CodeBlockObject):
+        #         self.template[self.block_type].update(dict(color=self.color))
 
     def get_template(self):
         return self.template
+
+    def update_file(self, file):
+        if isinstance(file, str):
+            file = FileObject(file)
+        if isinstance(file, FileObject):
+            self.template[self.block_type] = file.get_template()
 
     @classmethod
     def rich_text(cls, text_block):
@@ -229,7 +236,24 @@ class BaseBlockObject:
     def caption(cls, text_block):
         return {"caption": [text_block.get_template()]}
 
+    def update_color(self, color):
+        self.template[self.block_type].update(dict(color=color))
+
+    def update_text(self, text_block):
+        if not len(text_block):
+            self.text_block = [TextBlockObject(self.default_text)]
+        text_block = []
+        for i in range(len(self.text_block)):
+            if isinstance(self.text_block[i], str):
+                text_block.append(TextBlockObject(content=str(self.text_block[i])))
+            else:
+                text_block.append(self.text_block[i])
+
+        self.template[self.block_type] = self.rich_text(text_block)
+
     def update_children(self, children):
+        if isinstance(children, list):
+            children = ChildrenObject(*children)
         if isinstance(children, ChildrenObject):
             self.template[self.block_type].update(children.get_template())
 
@@ -241,7 +265,7 @@ class LinkObject:
         self.template = {"type":self.type,self.type:link}
 
     def get_template(self):
-        return  self.template
+        return self.template
 
 
 class FileObject:
@@ -250,8 +274,20 @@ class FileObject:
         self.file_type = file_type
         self.template = dict(type=self.file_type)
         self.template[self.file_type] = (dict(url=self.url))
+
     def get_template(self):
         return self.template
+
+class EmojiObject:
+    def __init__(self, emoji):
+        #print(emoji)
+        self.emoji = emoji
+        self.template = {"type": "emoji", "emoji": self.emoji} if isinstance(self.emoji, str) else None
+
+    def get_template(self) -> dict:
+        return self.template
+
+
 
 class TextBlockObject(BaseBlockObject):
     def __init__(self, content="This is Text", link=None):
@@ -269,25 +305,19 @@ class TextBlockObject(BaseBlockObject):
 
 class ParagraphBlockObject(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
-        super().__init__(block_type="paragraph", color=color, text_block=text_block,children=children)
-        self.update_children(children)
+        super().__init__(block_type="paragraph", color=color, text_block=text_block, children=children)
+        self.update_color(self.color)
+        self.update_text(self.text_block)
+        self.update_children(self.children)
 
 
 class HeadingBlockObject(BaseBlockObject):
     def __init__(self, heading_level=1, *text_block, color=Colors.Text.default):
         self.heading_level = heading_level
         super().__init__(f"heading_{self.heading_level}", color=color, text_block=text_block)
-
-
-class EmojiObject:
-    def __init__(self, emoji):
-        #print(emoji)
-        self.emoji = emoji
-        self.template = {"type": "emoji", "emoji": self.emoji} if isinstance(self.emoji, str) else None
-
-
-    def get_template(self) -> dict:
-        return self.template
+        self.update_color(self.color)
+        self.update_text(self.text_block)
+        self.update_children(self.children)
 
 
 class CalloutBlockObject(BaseBlockObject):
@@ -296,6 +326,8 @@ class CalloutBlockObject(BaseBlockObject):
         self.emoji = emoji
         if isinstance(emoji, str):
             self.template[self.block_type] = dict(icon=EmojiObject(self.emoji).get_template())
+        self.update_color(self.color)
+        self.update_text(self.text_block)
         self.update_children(children)
 
 
@@ -303,24 +335,32 @@ class QuoteBlockObject(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("quote", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
+        self.update_color(self.color)
+        self.update_text(self.text_block)
 
 
 class BulletedBlockObject(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("bulleted_list_item", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
+        self.update_color(self.color)
+        self.update_text(self.text_block)
 
 
 class NumberedBlockObject(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("numbered_list_item", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
+        self.update_color(self.color)
+        self.update_text(self.text_block)
 
 
 class ToDoBlockObject(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, checked=False, children=None):
         super().__init__("to_do", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
+        self.update_color(self.color)
+        self.update_text(self.text_block)
         self.check = checked
         self.template[self.block_type].update(dict(checked=checked))
 
@@ -329,6 +369,8 @@ class ToggleBlockObject(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("toggle", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
+        self.update_color(self.color)
+        self.update_text(self.text_block)
 
 
 class CodeBlockObject(BaseBlockObject):
@@ -338,6 +380,7 @@ class CodeBlockObject(BaseBlockObject):
         if isinstance(self.caption, TextBlockObject):
             self.template[self.block_type].update(BaseBlockObject.caption(self.caption))
         self.update_children(self.children)
+        self.update_text(self.text_block)
         self.language = language
         self.template[self.block_type].update(dict(language=language))
 
@@ -364,50 +407,36 @@ class EmbedBlockObject(BaseBlockObject):
 
 
 class ImageBlockObject(BaseBlockObject):
-    block_json_type = "file"
-
-    def __init__(self, file=None):
+    def __init__(self, file):
         super().__init__("image")
-        del self.template[self.block_type]['rich_text']
-        del self.template[self.block_type]['color']
         self.file = file
-        if isinstance(file, FileObject):
-            self.template[self.block_type] = self.file.get_template()
+        self.update_file(self.file)
 
 
 class VideoBlockObject(BaseBlockObject):
-    block_json_type = "file"
-
     def __init__(self, file):
         super().__init__("video")
         self.file = file
-        self.template[self.block_type] = self.file.get_template()
+        self.update_file(self.file)
 
 
 class FileBlockObject(BaseBlockObject):
-    block_json_type = "file"
-
     def __init__(self, file=None):
         super().__init__("file")
         self.file = file
-        self.template[self.block_type] = self.file.get_template()
+        self.update_file(self.file)
 
 
 class PDFBlockObject(BaseBlockObject):
-    block_json_type = "file"
     def __init__(self, file):
         super().__init__("pdf")
         self.file = file
-        del self.template[self.block_type]['rich_text']
-        del self.template[self.block_type]['color']
-        self.template[self.block_type] = self.file.get_template()
+        self.update_file(self.file)
 
 
 class BookmarkBlockObject(BaseBlockObject):
     def __init__(self, caption=None, url=None):
         super().__init__("bookmark")
-        del self.template[self.block_type]['rich_text']
-        del self.template[self.block_type]['color']
         self.caption = caption
         self.url = url
         self.template[self.block_type].update(dict(url=self.url))
@@ -420,35 +449,49 @@ class EquationBlockObject(BaseBlockObject):
         super().__init__("equation")
         self.expression = expression
         self.template[self.block_type].update(dict(expression=self.expression))
-        del self.template[self.block_type]['rich_text']
-        del self.template[self.block_type]['color']
+
 
 class DividerBlockObject(BaseBlockObject):
     def __init__(self):
         super().__init__("divider")
-        del self.template[self.block_type]['rich_text']
-        del self.template[self.block_type]['color']
 
 
 class TableOfContentBlockObject(BaseBlockObject):
+    # show an outline of content
     def __init__(self, color=Colors.Text.default):
         super().__init__("table_of_contents", color=color)
 
 
 class BreadcrumbBlockObject(BaseBlockObject):
-    def __init__(self, expression):
+    def __init__(self):
         super().__init__("breadcrumb")
 
 
-class ColumListBlockObject(BaseBlockObject):
+class ColumnListBlockObject(BaseBlockObject):
     #parent block for column children
     def __init__(self, children=None):
-        super().__init__("column_list", children)
+        super().__init__("column_list", children=children)
+        self.update_children(self.children)
 
 
 class ColumnBlockObject(BaseBlockObject):
     def __init__(self, children=None):
-        super().__init__("column", children)
+        super().__init__("column", children=children)
+        self.update_children(self.children)
+
+
+class LinkPreviewBlockObject(BaseBlockObject):
+    # can't be create
+    def __init__(self, url=None):
+        super().__init__("link_preview")
+        self.url = url
+
+
+class TemplateBlockObject(BaseBlockObject):
+    def __init__(self, *title, children=None):
+        super().__init__("template", text_block=title, children=children)
+        self.update_text(title)
+        self.update_children(self.children)
 
 
 class Blocks:
@@ -472,6 +515,9 @@ class Blocks:
     File = FileBlockObject
     TableOfContent = TableOfContentBlockObject
     Breadcrumb = BreadcrumbBlockObject
+    ColumnList = ColumnListBlockObject
+    ColumnBlock = ColumnBlockObject
+    Template = TemplateBlockObject
 
 
 
