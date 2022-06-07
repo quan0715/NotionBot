@@ -1,6 +1,5 @@
 from PyNotion import *
 from PyNotion import Database, Page
-from PyNotion.BaseObject import *
 from PyNotion.Object import *
 
 
@@ -39,11 +38,15 @@ class Notion:
             print("Connect failed please request again !!!")
             return None
 
-    def fetch_databases(self, title, page_size=1):
+    def retrieve(self, url):
+        r = requests.get(url, headers=self.headers)
+        return r.json()
+
+    def fetch_databases(self, title):
         payload = {
             'query': f'{title}',
             'filter': {'value': 'database', 'property': 'object'},
-            'page_size': page_size
+            'page_size': 100
         }
         response = requests.request("POST", self.search_url, json=payload, headers=self.patch_headers)
         if response.json()['results']:
@@ -58,16 +61,16 @@ class Notion:
             print(f"Can't find DataBase {title}")
             return None
 
-    def fetch_page(self, title, page_size=1):
+    def fetch_page(self, title):
         payload = {
             'query': f'{title}',
             'filter': {'value': 'page', 'property': 'object'},
-            'page_size': page_size
+            'page_size': 100
         }
         response = requests.post(self.search_url, json=payload, headers=self.patch_headers)
         # print(response.json())
         if response.status_code == 200:
-            #print(response.text)
+            # print(response.text)
             text = response.json()['results'][0]
             page_id = text['id']
             # print(page_id)
@@ -78,14 +81,9 @@ class Notion:
 
         return None
 
-    def fetch_block(self, block_id):
-        if block_id.startswith("https://www.notion.so/"):
-            block_id = block_id.split("#")[-1]
-        return Block(bot=self, block_id=block_id)
-
     def create_new_page(self, data, database=None):
         if database:
-            p = database.post(database.post_template(data))
+            p = database.post(self, database.make_post(data))
         else:
             p = Page.create_page(self, data)
         return p
@@ -96,26 +94,28 @@ class Notion:
     def update_page(self,target, data):
         if isinstance(target.parent, Database):
             data = target.parent.post_template(data)
-        target.update(data, )
+        target.update(data)
 
+    def create_post_template(self, target, data):
+        template = {
+            'parent': ParentObject(target.type, target.id).template,
+            'archived': False,
+            'properties': {}
+        }
 
-    def create_new_database(self, title: str, parent: Page, property_object):
+    def create_new_database(self, title: str, parent: Page, property_object: PropertyObject):
         """
         :param property_object: PropertyObject: properties name and their corresponding value type
         :param title: str object, set the title of the database, request
         :param parent: Page, set the database parent in which page
         """
         template = {
-            "parent": ParentObject(parent_type=ParentType.page, parent_id=parent.object_id).template,
+            "parent": ParentObject(parent_type=ParentType.page_id, parent_id=parent.object_id).template,
             "title": TextObject(content=title).template,
+            "properties": property_object.get_template(),
         }
-        if isinstance(property_object, PropertyObject):
-            template.update(dict(properties=property_object.get_template()))
-        else:
-            template.update(dict(properties=PropertyObject({"UnTitle": TitleProperty()}).get_template()))
         #print(template)
-        #print(template)
-        r = requests.post(BaseObject.DatabaseAPI, headers=self.patch_headers, data=json.dumps(template))
+        r = requests.post(Database.database_api, headers=self.patch_headers, data=json.dumps(template))
         if r.status_code == 200:
             print(f"database {title} 創建成功,你可以在 page_id {parent.object_id} 找到他")
             return r.json()
