@@ -10,12 +10,16 @@ from PyNotion.NotionClient import Notion
 AUTH = "your own integration's token"
 notion_bot = Notion(auth=AUTH)
 ```
-If it authenticated, it will print out `Connect to integration Quan`,otherwise `Connect failed please request again !!!`
+If it authenticated, it will print out `Connect to integration YOUR_INEGRATION_NAME`,otherwise `Connect failed please request again !!!`
 As you run into this situation, make sure to check out your integration token is type it correctly.
 
-### 讀取特定的page或database
+### Fetch specific page or database
 #### Notion.fetch_page(your page title)
 ```python3
-main_page = notion_bot.fetch_page("PyNotion test")
+page = your_notion_bot.fetch_page("your_page_title")
+```
+#### Notion.fetch_database(your page title)
+```python3
+database = your_notion_bot.fetch_page("your_data_base_title")
 ```
 
