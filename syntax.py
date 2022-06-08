@@ -194,7 +194,18 @@ class Colors:
         pink = "pink_background"
         red = "red_background"
 
+
 class File:
     class Type(str, Enum):
         file = "file"
         external = "external"
+
+
+class Annotations:
+    bold = "bold"
+    italic = "italic"
+    strikethrough = "strikethrough"
+    underline = "underline"
+    code = "code"
+    color = "color"
+

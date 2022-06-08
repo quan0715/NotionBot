@@ -138,6 +138,7 @@ class Page(BaseObject):
         else:
             print(r.json()['message'])
 
+
 class Database(BaseObject):
     def __init__(self, bot, database_id: str):
         super().__init__(bot, database_id)
