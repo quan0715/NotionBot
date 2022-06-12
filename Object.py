@@ -135,6 +135,21 @@ class UrlProperty(PropertyBase):
         super().__init__("url")
 
 
+class AnnotationsObject:
+    def __init__(self, bold=False, italic=False, strikethrough=False, underline=False, code=False,color=Colors.Text.default):
+        self.template = {
+            'bold': bold,
+            'italic': italic,
+            'strikethrough': strikethrough,
+            'underline': underline,
+            'code': code,
+            'color': color
+        },
+
+    def get_template(self):
+        return self.template
+
+
 class RichTextObject:
     def __init__(self, text_feature: dict = None, plain_text: str = "", href: str = ""):
         '''
@@ -246,7 +261,7 @@ class BaseBlockObject:
             else:
                 text_block.append(self.text_block[i])
 
-        self.template[self.block_type] = self.rich_text(text_block)
+        self.template[self.block_type].update(self.rich_text(text_block))
 
     def update_children(self, children):
         if isinstance(children, list):
@@ -287,13 +302,17 @@ class EmojiObject:
 
 
 class TextBlockObject(BaseBlockObject):
-    def __init__(self, content="This is Text", link=None):
+    def __init__(self, content="This is Text", link=None, annotations=None):
         super().__init__(block_type="text", text_block=None)
         self.content = content
         self.link = link
         self.template[self.block_type] = {"content": self.content}
         if isinstance(link, str):
             self.template[self.block_type].update(dict(link=LinkObject(self.link).template))
+        if isinstance(annotations,dict):
+            annotations = AnnotationsObject(**annotations)
+        if isinstance(annotations, AnnotationsObject):
+            self.template.update(annotations=annotations.get_template())
 
 
 # class RichTextObject:
