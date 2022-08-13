@@ -14,7 +14,7 @@ class Notion:
         self.url = f'https://api.notion.com/v1'
         self.search_url = self.url + "/search"
         self.search_database = self.url + "/databases?page_size=100"
-        self.notion_version = "2022-02-22"
+        self.notion_version = "2022-06-28"
         self.headers = {
             "Authorization": f"Bearer {self.auth}",
             "Notion-Version": self.notion_version,

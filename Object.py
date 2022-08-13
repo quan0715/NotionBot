@@ -19,7 +19,7 @@ class ConditionFilters:
 
 
 class Sorts:
-    def __init__(self, sort_list: list):
+    def __init__(self, *sort_list):
         self.template = [t.template for t in sort_list]
 
 
@@ -34,7 +34,7 @@ class SortObject:
 
 
 class Query:
-    def __init__(self, filters=None, sorts: Sorts = None, start_cursor: str = None, page_size: int = None):
+    def __init__(self, filters=None, sorts=None, start_cursor: str = None, page_size: int = None):
         self.filters = filters
         self.sorts = sorts
         self.start_cursor = start_cursor
@@ -43,7 +43,7 @@ class Query:
 
     def make_template(self):
         template = {}
-        if self.filters:
+        if self.filters :
             template["filter"] = self.filters.template
         if self.sorts:
             template["sorts"] = self.sorts.template

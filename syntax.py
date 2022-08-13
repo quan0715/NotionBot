@@ -70,6 +70,39 @@ class Number:
         argentine_peso = "argentine_peso"
         uruguayan_peso = "uruguayan_peso"
 
+class Date:
+    class Type(str, Enum):
+        date = "date"
+        created_time = "created_time"
+        last_edited_time = "last_edited_time"
+
+    class Filter(str, Enum):
+        equals = "equals"
+        before = "before"
+        after = "after"
+        on_or_before = "on_or_before"
+        is_empty = "is_empty"
+        is_not_empty = "is_not_empty"
+        on_or_after = "on_or_after"
+        past_week = "past_week"
+        past_month = "past_month"
+        past_year = "past_year"
+        next_week = "next_week"
+        next_month = "next_month"
+        next_year = "next_year"
+
+
+class People:
+    class Type(str, Enum):
+        people = "people"
+        created_by = "created_by"
+        last_edited_by = "last_edited_by"
+
+    class Filter(str, Enum):
+        contains = "contains"
+        does_not_contain = "does_not_contain"
+        is_empty = "is_empty"
+        is_not_empty = "is_not_empty"
 
 class Text:
     class Type(str, Enum):

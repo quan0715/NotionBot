@@ -68,6 +68,11 @@ class BaseObject:
                         text += f" ~ {value[prop_type]['end']}"
                     # if value[prop_type]['start']
                     result[key] = text
+                elif prop_type == 'people':
+                    result[key] = ""
+                    #print(value[prop_type])
+                    for n in value[prop_type]:
+                        result[key] += f"{n['name']} "
                 else:
                     result[key] = "None"
             except:
@@ -120,13 +125,19 @@ class Page(BaseObject):
             print("create failed")
             return r.json()
 
-    def create_database(self, title, properties=None):
+    def create_database(self, title, properties=None, icon=None, cover=None, is_inline=False):
         template = dict(
             parent=self.parent_root.template,
-            title=TextObject(content=title).template
+            title=TextObject(content=title).template,
+            is_inline=is_inline
         )
-        if isinstance(properties, PropertyObject):
+        if isinstance(properties, dict):
+            properties = PropertyObject(properties)
             template.update(dict(properties=properties.get_template()))
+
+        elif isinstance(properties, PropertyObject):
+            template.update(dict(properties=properties.get_template()))
+
         else:
             properties = PropertyObject({"UnTitle": TitleProperty()})
             template.update(dict(properties=properties.get_template()))
@@ -136,7 +147,7 @@ class Page(BaseObject):
             print(f"database {title} 創建成功,你可以在 page_id {self.object_id} 找到他")
             return r.json()
         else:
-            print(r.json()['message'])
+            print("error", r.json()['message'])
 
 
 class Database(BaseObject):
@@ -236,6 +247,9 @@ class Database(BaseObject):
 
             if value_type == 'date':
                 prop_dict[prop] = {'type': 'date', 'date': value}
+
+
+
 
         return {
             'parent': ParentObject(ParentType.database, self.object_id).template,
