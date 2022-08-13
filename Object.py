@@ -621,35 +621,3 @@ class BlockObject:
             self.template[f"{self.block_type}"]["text"] = self.object.template
 
 
-class EmojiObject:
-    template = {"icon": {"type": "emoji", "emoji": ""}}
-
-    def __init__(self, emoji):
-        self.emoji = emoji
-        EmojiObject.template['icon']['emoji'] = emoji
-        self.emoji_json = EmojiObject.template
-
-    def set_emoji(self, emoji):
-        self.emoji = emoji
-        self.emoji_json['icon']['emoji'] = emoji
-
-    def get_emoji(self):
-        return self.emoji
-
-    def get_json(self):
-        return self.emoji_json
-
-
-class LinkObject:
-    def __init__(self, url: str = ""):
-        self.url = ""
-        self.template = {}
-        if url:
-            self.set_url(url)
-
-    def set_url(self, url: str):
-        """
-        :type url: str
-        """
-        self.url = url
-        self.template = {"type": "url", "url": self.url}
