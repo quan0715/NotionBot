@@ -1,12 +1,5 @@
 from enum import Enum
 
-
-class ParentType(str, Enum):
-    database = "database_id"
-    page = "page_id"
-    workspace = "workspace"
-
-
 class Number:
     class Type(str, Enum):
         number = "number"
@@ -104,6 +97,7 @@ class People:
         is_empty = "is_empty"
         is_not_empty = "is_not_empty"
 
+
 class Text:
     class Type(str, Enum):
         title = "title"
@@ -151,16 +145,16 @@ class PropertyType(str, Enum):
     last_edited_by = "last_edited_by"
 
 
-class Select:
-    class Type(str, Enum):
-        select = "select"
-        multi_select = "multi_select"
-
-    class Filter(str, Enum):
-        equals = "equals"
-        does_not_equal = "does_not_equal"
-        is_empty = "is_empty"
-        is_not_empty = "is_not_empty"
+# class Select:
+#     class Type(str, Enum):
+#         select = "select"
+#         multi_select = "multi_select"
+#
+#     class Filter(str, Enum):
+#         equals = "equals"
+#         does_not_equal = "does_not_equal"
+#         is_empty = "is_empty"
+#         is_not_empty = "is_not_empty"
 
 
 class CheckBox:
@@ -186,59 +180,10 @@ class Sort:
         last_edited_time = "last_edited_time"
 
 
-class Operator(str, Enum):
-    And = "and"
-    Or = "or"
 
 
-class Colors:
-    class Text(str, Enum):
-        default = "default"
-        gray = "gray"
-        brown = "brown"
-        orange = "orange"
-        yellow = "yellow"
-        green = "green"
-        blue = "blue"
-        purple = "purple"
-        pink = "pink"
-        red = "red"
-
-    class Option(str, Enum):
-        default = "default"
-        gray = "gray"
-        brown = "brown"
-        orange = "orange"
-        yellow = "yellow"
-        green = "green"
-        blue = "blue"
-        purple = "purple"
-        pink = "pink"
-        red = "red"
-
-    class Background(str, Enum):
-        gray = "gray_background"
-        brown = "brown_background"
-        orange = "orange_background"
-        yellow = "yellow_background"
-        green = "green_background"
-        blue = "blue_background"
-        purple = "purple_background"
-        pink = "pink_background"
-        red = "red_background"
 
 
-class File:
-    class Type(str, Enum):
-        file = "file"
-        external = "external"
 
 
-class Annotations:
-    bold = "bold"
-    italic = "italic"
-    strikethrough = "strikethrough"
-    underline = "underline"
-    code = "code"
-    color = "color"
 
