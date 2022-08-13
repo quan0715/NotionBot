@@ -103,7 +103,7 @@ class Notion:
             'properties': {}
         }
 
-    def create_new_database(self, title: str, parent: Page, property_object: Property):
+    def create_new_database(self, title: str, parent: Page, property_object: PropertyObject):
         """
         :param property_object: PropertyObject: properties name and their corresponding value type
         :param title: str object, set the title of the database, request

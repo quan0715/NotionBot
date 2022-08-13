@@ -2,7 +2,7 @@
 from PyNotion import *
 from PyNotion.object import *
 from PyNotion.database import *
-
+from PyNotion.database.Property import *
 
 class Page(BaseObject):
     def __init__(self, bot, page_id, parent=None):
@@ -55,15 +55,16 @@ class Page(BaseObject):
             title=Text(content=title).template,
             is_inline=is_inline
         )
+
         if isinstance(properties, dict):
-            properties = Property(properties)
+            properties = PropertyObject(properties)
             template.update(dict(properties=properties.make()))
 
-        elif isinstance(properties, Property):
+        elif isinstance(properties, PropertyObject):
             template.update(dict(properties=properties.make()))
 
         else:
-            properties = Property({"UnTitle": TitleProperty()})
+            properties = PropertyObject({"UnTitle": TitleProperty()})
             template.update(dict(properties=properties.make()))
 
         r = requests.post(BaseObject.DatabaseAPI, headers=self.bot.patch_headers, data=json.dumps(template))

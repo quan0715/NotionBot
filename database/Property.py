@@ -2,7 +2,7 @@ from PyNotion.syntax import *
 from PyNotion.object import *
 
 
-class Property:
+class PropertyObject:
     def __init__(self, properties_dict: dict) -> None:
         self.template = {}
         for name, value_type_object in properties_dict.items():
