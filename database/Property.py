@@ -63,3 +63,24 @@ class DataProperty(PropertyBase):
 class UrlProperty(PropertyBase):
     def __init__(self):
         super().__init__("url")
+
+
+class CreatedByProperty(PropertyBase):
+    def __init__(self):
+        super().__init__("created_by")
+
+
+class CreatedTimeProperty(PropertyBase):
+    def __init__(self):
+        super().__init__("created_time")
+
+
+class LastEditedTimeProperty(PropertyBase):
+    def __init__(self):
+        super().__init__("last_edited_time")
+
+
+class LastEditedByProperty(PropertyBase):
+    def __init__(self):
+        super().__init__("last_edited_by")
+

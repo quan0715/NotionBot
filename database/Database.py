@@ -27,7 +27,8 @@ class Database(BaseObject):
             return Page(bot=self.bot, page_id=str(r.json()['id']))
         except KeyError:
             print("Create failed")
-            return r.json()
+            print(r.json()['message'])
+            return r.json()['message']
 
     def get_properties(self):
         # get database properties
@@ -83,9 +84,8 @@ class Database(BaseObject):
         prop_dict = {}
         for prop, value in data.items():
             value_type = self.properties[prop]['type']
-            if value_type == Text.Type.title or value_type == Text.Type.rich_text:
-                t = Text(content=value).template
-                prop_dict[prop] = {f'{value_type}': t}
+            if value_type == TextObject.Type.title or value_type == TextObject.Type.rich_text:
+                prop_dict[prop] = {f'{value_type}': TextObject(content=str(value)).make()}
             if value_type == Number.Type.number:
                 if type(value) == str:
                     if value == '':
@@ -103,6 +103,7 @@ class Database(BaseObject):
 
             if value_type == 'date':
                 prop_dict[prop] = {'type': 'date', 'date': value}
+
         return {
             'parent': Parent(Parent.Type.database, self.object_id).make(),
             'archived': False,

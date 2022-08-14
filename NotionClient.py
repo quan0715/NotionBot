@@ -1,20 +1,21 @@
 from PyNotion import *
 from PyNotion.database import *
 from PyNotion.page import *
+from PyNotion.object import *
 
 
 class Notion:
     user_api = "https://api.notion.com/v1/users/me"
+    api = f'https://api.notion.com/v1'
+    search_api = 'https://api.notion.com/v1/search'
+    notion_version = "2022-06-28"
+    search_database_api = 'https://api.notion.com/v1/databases'
 
-    def __init__(self, auth):
+    def __init__(self, auth: str):
         """
         :param auth: your notion integration internal token
         """
         self.auth = auth
-        self.url = f'https://api.notion.com/v1'
-        self.search_url = self.url + "/search"
-        self.search_database = self.url + "/databases?page_size=100"
-        self.notion_version = "2022-06-28"
         self.headers = {
             "Authorization": f"Bearer {self.auth}",
             "Notion-Version": self.notion_version,
@@ -48,7 +49,7 @@ class Notion:
             'filter': {'value': 'database', 'property': 'object'},
             'page_size': 100
         }
-        response = requests.request("POST", self.search_url, json=payload, headers=self.patch_headers)
+        response = requests.request("POST", self.search_api, json=payload, headers=self.patch_headers)
         if response.json()['results']:
             # print(response.text)
             text = response.json()['results'][0]
@@ -67,7 +68,7 @@ class Notion:
             'filter': {'value': 'page', 'property': 'object'},
             'page_size': 100
         }
-        response = requests.post(self.search_url, json=payload, headers=self.patch_headers)
+        response = requests.post(self.search_api, json=payload, headers=self.patch_headers)
         # print(response.json())
         if response.status_code == 200:
             # print(response.text)
@@ -88,20 +89,13 @@ class Notion:
             p = Page.create_page(data)
         return p
 
-    def append_block(self, target_page, children_array):
-        pass
+    def append_block(self, target_page :Page, children_array):
+        target_page.append_children(children_array)
 
     def update_page(self,target, data):
         if isinstance(target.parent, Database):
             data = target.parent.post_template(data)
         target.update(data)
-
-    def create_post_template(self, target, data):
-        template = {
-            'parent': Parent(target.type, target.id).template,
-            'archived': False,
-            'properties': {}
-        }
 
     def create_new_database(self, title: str, parent: Page, property_object: PropertyObject):
         """
@@ -111,7 +105,7 @@ class Notion:
         """
         template = {
             "parent": Parent(parent_type=Parent.Type.page, parent_id=parent.object_id).template,
-            "title": Text(content=title).template,
+            "title": TextObject(content=title).template,
             "properties": property_object.make(),
         }
         r = requests.post(Database.API, headers=self.patch_headers, data=json.dumps(template))

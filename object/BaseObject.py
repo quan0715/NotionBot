@@ -33,6 +33,9 @@ class BaseObject:
         return r.json()
 
     def append_children(self, data):
+        # list of children
+        # ChildrenObject
+        # dict
         if isinstance(data, list):
             data = Children(*data)
         if isinstance(data, Children):

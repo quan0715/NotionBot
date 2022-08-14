@@ -99,9 +99,6 @@ class People:
 
 
 class Text:
-    class Type(str, Enum):
-        title = "title"
-        rich_text = "rich_text"
 
     class Filter(str, Enum):
         # "title", "rich_text", "url", "email", and "phone_number"

@@ -4,6 +4,7 @@ from PyNotion.object import *
 from PyNotion.database import *
 from PyNotion.database.Property import *
 
+
 class Page(BaseObject):
     def __init__(self, bot, page_id, parent=None):
         super().__init__(bot, page_id)
@@ -52,7 +53,7 @@ class Page(BaseObject):
     def create_database(self, title, properties=None, icon=None, cover=None, is_inline=False):
         template = dict(
             parent=self.parent_root.template,
-            title=Text(content=title).template,
+            title=TextObject(content=title).template,
             is_inline=is_inline
         )
 
@@ -67,7 +68,7 @@ class Page(BaseObject):
             properties = PropertyObject({"UnTitle": TitleProperty()})
             template.update(dict(properties=properties.make()))
 
-        r = requests.post(BaseObject.DatabaseAPI, headers=self.bot.patch_headers, data=json.dumps(template))
+        r = requests.post(self.DatabaseAPI, headers=self.bot.patch_headers, data=json.dumps(template))
         if r.status_code == 200:
             print(f"database {title} 創建成功,你可以在 page_id {self.object_id} 找到他")
             return r.json()

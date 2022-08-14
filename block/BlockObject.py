@@ -1,4 +1,3 @@
-from PyNotion.syntax import *
 from PyNotion.object import *
 
 
@@ -33,11 +32,11 @@ class BaseBlockObject:
 
     def update_text(self, text_block):
         if not len(text_block):
-            self.text_block = [TextBlockObject(self.default_text)]
+            self.text_block = [TextBlock(self.default_text)]
         text_block = []
         for i in range(len(self.text_block)):
             if isinstance(self.text_block[i], str):
-                text_block.append(TextBlockObject(content=str(self.text_block[i])))
+                text_block.append(TextBlock(content=str(self.text_block[i])))
             else:
                 text_block.append(self.text_block[i])
 
@@ -50,16 +49,8 @@ class BaseBlockObject:
             self.template[self.block_type].update(children.make())
 
 
-
-
-
-
-
-
-
-
-class TextBlockObject(BaseBlockObject):
-    def __init__(self, content="This is Text", link=None, annotations=None):
+class TextBlock(BaseBlockObject):
+    def __init__(self, content="This is TextObject", link=None, annotations=None):
         super().__init__(block_type="text", text_block=None)
         self.content = content
         self.link = link
@@ -73,10 +64,10 @@ class TextBlockObject(BaseBlockObject):
 
 
 # class RichTextObject:
-#     def __init__(self, *text_block: TextBlockObject):
+#     def __init__(self, *text_block: TextBlock):
 #         self.template =
 
-class ParagraphBlockObject(BaseBlockObject):
+class ParagraphBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__(block_type="paragraph", color=color, text_block=text_block, children=children)
         self.update_color(self.color)
@@ -84,7 +75,7 @@ class ParagraphBlockObject(BaseBlockObject):
         self.update_children(self.children)
 
 
-class HeadingBlockObject(BaseBlockObject):
+class HeadingBlock(BaseBlockObject):
     def __init__(self, heading_level=1, *text_block, color=Colors.Text.default):
         self.heading_level = heading_level
         super().__init__(f"heading_{self.heading_level}", color=color, text_block=text_block)
@@ -93,7 +84,7 @@ class HeadingBlockObject(BaseBlockObject):
         self.update_children(self.children)
 
 
-class CalloutBlockObject(BaseBlockObject):
+class CalloutBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, emoji=None, children=None):
         super().__init__("callout", color=color, text_block=text_block, children=children)
         self.emoji = emoji
@@ -104,7 +95,7 @@ class CalloutBlockObject(BaseBlockObject):
         self.update_children(children)
 
 
-class QuoteBlockObject(BaseBlockObject):
+class QuoteBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("quote", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
@@ -112,7 +103,7 @@ class QuoteBlockObject(BaseBlockObject):
         self.update_text(self.text_block)
 
 
-class BulletedBlockObject(BaseBlockObject):
+class BulletedBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("bulleted_list_item", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
@@ -120,7 +111,7 @@ class BulletedBlockObject(BaseBlockObject):
         self.update_text(self.text_block)
 
 
-class NumberedBlockObject(BaseBlockObject):
+class NumberedBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("numbered_list_item", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
@@ -128,7 +119,7 @@ class NumberedBlockObject(BaseBlockObject):
         self.update_text(self.text_block)
 
 
-class ToDoBlockObject(BaseBlockObject):
+class ToDoBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, checked=False, children=None):
         super().__init__("to_do", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
@@ -138,7 +129,7 @@ class ToDoBlockObject(BaseBlockObject):
         self.template[self.block_type].update(dict(checked=checked))
 
 
-class ToggleBlockObject(BaseBlockObject):
+class ToggleBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, children=None):
         super().__init__("toggle", color=color, text_block=text_block, children=children)
         self.update_children(self.children)
@@ -146,11 +137,11 @@ class ToggleBlockObject(BaseBlockObject):
         self.update_text(self.text_block)
 
 
-class CodeBlockObject(BaseBlockObject):
+class CodeBlock(BaseBlockObject):
     def __init__(self, *text_block, caption=None, color=Colors.Text.default, language="plain text", children=None):
         super().__init__("code", color=color, text_block=text_block, children=children)
         self.caption = caption
-        if isinstance(self.caption, TextBlockObject):
+        if isinstance(self.caption, TextBlock):
             self.template[self.block_type].update(BaseBlockObject.caption(self.caption))
         self.update_children(self.children)
         self.update_text(self.text_block)
@@ -158,62 +149,62 @@ class CodeBlockObject(BaseBlockObject):
         self.template[self.block_type].update(dict(language=language))
 
 
-class ChildPageBlockObject(BaseBlockObject):
+class ChildPageBlock(BaseBlockObject):
     def __init__(self, title="child_page"):
         super().__init__("child_page")
         self.title = title
         self.template[self.block_type] = dict(title=title)
 
 
-class ChildDataBaseBlockObject(BaseBlockObject):
+class ChildDataBaseBlock(BaseBlockObject):
     def __init__(self, title="child_database"):
         super().__init__("child_database")
         self.title = title
         self.template[self.block_type] = dict(title=title)
 
 
-class EmbedBlockObject(BaseBlockObject):
+class EmbedBlock(BaseBlockObject):
     def __init__(self, url):
         super().__init__("embed")
         self.url = url
         self.template[self.block_type] = dict(url=self.url)
 
 
-class ImageBlockObject(BaseBlockObject):
+class ImageBlock(BaseBlockObject):
     def __init__(self, file):
         super().__init__("image")
         self.file = file
         self.update_file(self.file)
 
 
-class VideoBlockObject(BaseBlockObject):
+class VideoBlock(BaseBlockObject):
     def __init__(self, file):
         super().__init__("video")
         self.file = file
         self.update_file(self.file)
 
 
-class FileBlockObject(BaseBlockObject):
+class FileBlock(BaseBlockObject):
     def __init__(self, file=None):
         super().__init__("file")
         self.file = file
         self.update_file(self.file)
 
 
-class PDFBlockObject(BaseBlockObject):
+class PDFBlock(BaseBlockObject):
     def __init__(self, file):
         super().__init__("pdf")
         self.file = file
         self.update_file(self.file)
 
 
-class BookmarkBlockObject(BaseBlockObject):
+class BookmarkBlock(BaseBlockObject):
     def __init__(self, caption=None, url=None):
         super().__init__("bookmark")
         self.caption = caption
         self.url = url
         self.template[self.block_type].update(dict(url=self.url))
-        if isinstance(self.caption, TextBlockObject):
+        if isinstance(self.caption, TextBlock):
             self.template[self.block_type].update(BaseBlockObject.caption(self.caption))
 
 
@@ -224,50 +215,50 @@ class EquationBlockObject(BaseBlockObject):
         self.template[self.block_type].update(dict(expression=self.expression))
 
 
-class DividerBlockObject(BaseBlockObject):
+class DividerBlock(BaseBlockObject):
     def __init__(self):
         super().__init__("divider")
 
 
-class TableOfContentBlockObject(BaseBlockObject):
+class TableOfContentBlock(BaseBlockObject):
     # show an outline of content
     def __init__(self, color=Colors.Text.default):
         super().__init__("table_of_contents", color=color)
 
 
-class BreadcrumbBlockObject(BaseBlockObject):
+class BreadcrumbBlock(BaseBlockObject):
     def __init__(self):
         super().__init__("breadcrumb")
 
 
-class ColumnListBlockObject(BaseBlockObject):
+class ColumnListBlock(BaseBlockObject):
     # parent block for column children
     def __init__(self, children=None):
         super().__init__("column_list", children=children)
         self.update_children(self.children)
 
 
-class ColumnBlockObject(BaseBlockObject):
+class ColumnBlock(BaseBlockObject):
     def __init__(self, children=None):
         super().__init__("column", children=children)
         self.update_children(self.children)
 
 
-class LinkPreviewBlockObject(BaseBlockObject):
+class LinkPreviewBlock(BaseBlockObject):
     # can't be create
     def __init__(self, url=None):
         super().__init__("link_preview")
         self.url = url
 
 
-class TemplateBlockObject(BaseBlockObject):
+class TemplateBlock(BaseBlockObject):
     def __init__(self, *title, children=None):
         super().__init__("template", text_block=title, children=children)
         self.update_text(title)
         self.update_children(self.children)
 
 
-class LinkToPageBlockObject(BaseBlockObject):
+class LinkToPageBlock(BaseBlockObject):
     def __init__(self, target):
         # page_id or database_id
         super().__init__("link_to_page")
@@ -277,7 +268,7 @@ class LinkToPageBlockObject(BaseBlockObject):
             self.template[self.block_type] = target.make()
 
 
-class SyncedBlockObject(BaseBlockObject):
+class SyncedBlock(BaseBlockObject):
     def __init__(self, synced_from=None, children=None):
         super().__init__("synced_block", children=children)
         self.synced_from = synced_from
@@ -288,7 +279,7 @@ class SyncedBlockObject(BaseBlockObject):
             self.template[self.block_type].update(dict(synced_from=dict(block_id=self.synced_from)))
 
 
-class TableBlockObject(BaseBlockObject):
+class TableBlock(BaseBlockObject):
     def __init__(self, table_width=1, column_header=True, row_header=True, children=None):
         super().__init__("table", children=children)
         self.table_width = table_width
@@ -306,46 +297,46 @@ class TableBlockObject(BaseBlockObject):
         for row in row_list:
             cells = row['table_row']['cells']
             for i in range(self.table_width - len(cells)):
-                row['table_row']['cells'].append([TextBlockObject("").make()])
+                row['table_row']['cells'].append([TextBlock("").make()])
 
 
-class TableRowBlockObject(BaseBlockObject):
+class TableRowBlock(BaseBlockObject):
     def __init__(self, *cells):
         super().__init__("table_row")
         cell_list = []
         for cell in cells:
             if isinstance(cell, str):
-                cell = TextBlockObject(content=cell)
-            if isinstance(cell, TextBlockObject):
+                cell = TextBlock(content=cell)
+            if isinstance(cell, TextBlock):
                 cell_list.append([cell.make()])
 
         self.template[self.block_type].update(dict(cells=cell_list))
 
 # class Blocks:
-#     Paragraph = ParagraphBlockObject
-#     Heading = HeadingBlockObject
-#     Code = CodeBlockObject
-#     Toggle = ToggleBlockObject
-#     Numbered = NumberedBlockObject
-#     Bulleted = BulletedBlockObject
-#     ToDoList = ToDoBlockObject
-#     Callout = CalloutBlockObject
-#     Quote = QuoteBlockObject
-#     Text = TextBlockObject
-#     Embed = EmbedBlockObject
-#     Image = ImageBlockObject
-#     Video = VideoBlockObject
-#     PDF = PDFBlockObject
-#     Bookmark = BookmarkBlockObject
-#     Equation = EquationBlockObject
-#     Divider = DividerBlockObject
+#     Paragraph = ParagraphBlock
+#     Heading = HeadingBlock
+#     Code = CodeBlock
+#     Toggle = ToggleBlock
+#     Numbered = NumberedBlock
+#     Bulleted = BulletedBlock
+#     ToDoList = ToDoBlock
+#     Callout = CalloutBlock
+#     Quote = QuoteBlock
+#     TextObject = TextBlock
+#     Embed = EmbedBlock
+#     Image = ImageBlock
+#     Video = VideoBlock
+#     PDF = PDFBlock
+#     Bookmark = BookmarkBlock
+#     Equation = EquationBlock
+#     Divider = DividerBlock
 #     File = FileBlockObject
-#     TableOfContent = TableOfContentBlockObject
-#     Breadcrumb = BreadcrumbBlockObject
-#     ColumnList = ColumnListBlockObject
-#     ColumnBlock = ColumnBlockObject
-#     Template = TemplateBlockObject
-#     LinkToPage = LinkToPageBlockObject
-#     Synced = SyncedBlockObject
-#     TableRow = TableRowBlockObject
-#     Table = TableBlockObject
+#     TableOfContent = TableOfContentBlock
+#     Breadcrumb = BreadcrumbBlock
+#     ColumnList = ColumnListBlock
+#     ColumnBlock = ColumnBlock
+#     Template = TemplateBlock
+#     LinkToPage = LinkToPageBlock
+#     Synced = SyncedBlock
+#     TableRow = TableRowBlock
+#     Table = TableBlock

@@ -4,7 +4,7 @@ from .Parent import Parent
 from .Children import Children
 from .Link import Link
 from .File import File
-from .Text import *
+from .TextObject import *
 from .Emoji import Emoji
 from .Select import Select
 
