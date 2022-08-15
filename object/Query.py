@@ -32,6 +32,14 @@ class ConditionFilters(Filter):
 
 
 class SortObject:
+    class Direction(str, Enum):
+        asc = "ascending"
+        dec = "descending"
+
+    class Timestamp(str, Enum):
+        created_time = "created_time"
+        last_edited_time = "last_edited_time"
+
     def __init__(self, prop: str, direction="ascending"):
         self.property = prop
         self.direction = direction

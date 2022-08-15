@@ -135,15 +135,15 @@ class PropertyType(str, Enum):
 
 
 
-class Sort:
-    class Direction(str, Enum):
-        asc = "ascending"
-        dec = "descending"
-
-    class Timestamp(str, Enum):
-        created_time = "created_time"
-        last_edited_time = "last_edited_time"
-
+# class Sort:
+#     class Direction(str, Enum):
+#         asc = "ascending"
+#         dec = "descending"
+#
+#     class Timestamp(str, Enum):
+#         created_time = "created_time"
+#         last_edited_time = "last_edited_time"
+#
 
 
 
