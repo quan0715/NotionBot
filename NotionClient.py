@@ -105,7 +105,7 @@ class Notion:
         """
         template = {
             "parent": Parent(parent_type=Parent.Type.page, parent_id=parent.object_id).template,
-            "title": TextObject(content=title).template,
+            "title": Text(content=title).template,
             "properties": property_object.make(),
         }
         r = requests.post(Database.API, headers=self.patch_headers, data=json.dumps(template))

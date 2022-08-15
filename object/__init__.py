@@ -4,9 +4,12 @@ from .Parent import Parent
 from .Children import Children
 from .Link import Link
 from .File import File
-from .TextObject import *
+from .Text import *
 from .Emoji import Emoji
-from .Select import Select
+from .Option import *
+from .Number import *
+from .CheckBox import *
+from .Data import *
 
 
 

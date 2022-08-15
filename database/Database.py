@@ -21,8 +21,7 @@ class Database(BaseObject):
         return super().update(self.database_url, data)
 
     def post(self, data):
-        data = data if isinstance(data, str) else json.dumps(data)
-        r = requests.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=data)
+        r = requests.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make()))
         try:
             return Page(bot=self.bot, page_id=str(r.json()['id']))
         except KeyError:
@@ -80,32 +79,51 @@ class Database(BaseObject):
                 result[t].append(v)
         return result
 
-    def post_template(self, data: dict[str:str]) -> dict:
-        prop_dict = {}
-        for prop, value in data.items():
-            value_type = self.properties[prop]['type']
-            if value_type == TextObject.Type.title or value_type == TextObject.Type.rich_text:
-                prop_dict[prop] = {f'{value_type}': TextObject(content=str(value)).make()}
-            if value_type == Number.Type.number:
-                if type(value) == str:
-                    if value == '':
-                        value = "-1"
-                    if value.endswith('%'):
-                        value = value.split('%')[0]
-                    value = eval(value)
-                prop_dict[prop] = {'type': value_type, value_type: value}
+    def new_page(self, *post_list):
+        return DatabasePage(self, *post_list)
 
-            if value_type == Select.Type.select:
-                prop_dict[prop] = {'type': 'select', 'select': {'name': value}}
 
-            if value_type == 'url':
-                prop_dict[prop] = Link(value).template
+    # def post_template(self, data: dict[str:str]) -> dict:
+    #     prop_dict = {}
+    #     for prop, value in data.items():
+    #         value_type = self.properties[prop]['type']
+    #         if value_type == Text.Type.title or value_type == Text.Type.rich_text:
+    #             prop_dict[prop] = {f'{value_type}': Text(content=str(value)).make()}
+    #         if value_type == Number.Type.number:
+    #             if type(value) == str:
+    #                 if value == '':
+    #                     value = "-1"
+    #                 if value.endswith('%'):
+    #                     value = value.split('%')[0]
+    #                 value = eval(value)
+    #             prop_dict[prop] = {'type': value_type, value_type: value}
+    #
+    #         if value_type == Option.Type.select:
+    #             prop_dict[prop] = {'type': 'select', 'select': {'name': value}}
+    #
+    #         if value_type == 'url':
+    #             prop_dict[prop] = Link(value).template
+    #
+    #         if value_type == 'date':
+    #             prop_dict[prop] = {'type': 'date', 'date': value}
+    #
+    #     return {
+    #         'parent': Parent(Parent.Type.database, self.object_id).make(),
+    #         'archived': False,
+    #         'properties': prop_dict
+    #     }
 
-            if value_type == 'date':
-                prop_dict[prop] = {'type': 'date', 'date': value}
 
-        return {
-            'parent': Parent(Parent.Type.database, self.object_id).make(),
+class DatabasePage:
+    def __init__(self, target: Database, *post_list):
+        self.template = {
+            'parent': Parent(Parent.Type.database, target.object_id).make(),
             'archived': False,
-            'properties': prop_dict
+            'properties': {}
         }
+        for p in post_list:
+            self.template['properties'].update(p.make())
+
+    def make(self):
+        return self.template
+

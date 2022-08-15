@@ -17,47 +17,50 @@ class PropertyBase:
         self.type = prop_type
         self.template = {self.type: {}}
 
+    def post(self, data):
+        return {f'{self.type}': data.make()}
+
     def make(self):
         return self.template
 
 
-class TextProperty(PropertyBase):
-    def __init__(self):
-        super().__init__(prop_type="rich_text")
+# class TextProperty(PropertyBase):
+#     def __init__(self):
+#         super().__init__(prop_type="rich_text")
+#
+#
+# class TitleProperty(PropertyBase):
+#     def __init__(self):
+#         super().__init__(prop_type="title")
 
 
-class TitleProperty(PropertyBase):
-    def __init__(self):
-        super().__init__(prop_type="title")
+# class NumberProperty(PropertyBase):
+#     def __init__(self, _format=Number.Format.number):
+#         super().__init__(Number.Type.number)
+#         self.format = _format
+#         self.template[self.type] = {"format": _format}
 
 
-class NumberProperty(PropertyBase):
-    def __init__(self, _format=Number.Format.number):
-        super().__init__(Number.Type.number)
-        self.format = _format
-        self.template[self.type] = {"format": _format}
+# class SelectProperty(PropertyBase):
+#     def __init__(self, *option_list: Option):
+#         super().__init__(Option.Type.select)
+#         self.template[self.type] = {"options": [option.make() for option in option_list]}
+#
+#
+# class MultiSelectProperty(PropertyBase):
+#     def __init__(self, *option_list):
+#         super().__init__(Option.Type.multi_select)
+#         self.template[self.type] = {"options": [{"name": o[0], "color": o[1]} for o in option_list]}
 
 
-class SelectProperty(PropertyBase):
-    def __init__(self, *option_list: Select):
-        super().__init__(Select.Type.select)
-        self.template[self.type] = {"options": [option.make() for option in option_list]}
+# class CheckboxProperty(PropertyBase):
+#     def __init__(self):
+#         super().__init__(CheckBox.Type.checkbox)
 
 
-class MultiSelectProperty(PropertyBase):
-    def __init__(self, *option_list):
-        super().__init__(Select.Type.multi_select)
-        self.template[self.type] = {"options": [{"name": o[0], "color": o[1]} for o in option_list]}
-
-
-class CheckboxProperty(PropertyBase):
-    def __init__(self):
-        super().__init__(CheckBox.Type.checkbox)
-
-
-class DataProperty(PropertyBase):
-    def __init__(self):
-        super().__init__("date")
+# class DataProperty(PropertyBase):
+#     def __init__(self):
+#         super().__init__("date")
 
 
 class UrlProperty(PropertyBase):

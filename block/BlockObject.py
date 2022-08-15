@@ -50,7 +50,7 @@ class BaseBlockObject:
 
 
 class TextBlock(BaseBlockObject):
-    def __init__(self, content="This is TextObject", link=None, annotations=None):
+    def __init__(self, content="This is Text", link=None, annotations=None):
         super().__init__(block_type="text", text_block=None)
         self.content = content
         self.link = link
@@ -322,7 +322,7 @@ class TableRowBlock(BaseBlockObject):
 #     ToDoList = ToDoBlock
 #     Callout = CalloutBlock
 #     Quote = QuoteBlock
-#     TextObject = TextBlock
+#     Text = TextBlock
 #     Embed = EmbedBlock
 #     Image = ImageBlock
 #     Video = VideoBlock

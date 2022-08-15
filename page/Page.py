@@ -53,7 +53,7 @@ class Page(BaseObject):
     def create_database(self, title, properties=None, icon=None, cover=None, is_inline=False):
         template = dict(
             parent=self.parent_root.template,
-            title=TextObject(content=title).template,
+            title=Text(content=title).template,
             is_inline=is_inline
         )
 
