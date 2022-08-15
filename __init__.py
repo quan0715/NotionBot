@@ -1,8 +1,11 @@
 import json
 import requests
-from PyNotion.BaseObject import Page, Database, Block
-from PyNotion.Object import *
-from PyNotion.syntax import *
+from . import database
+from . import page
+from PyNotion.object import *
 from PyNotion.NotionClient import Notion
-__all__ = ['requests','json', 'Object', 'Notion', 'Page', 'Database', 'Block']
+# import PyNotion.block
+# import PyNotion.syntax
+
+__all__ = ['requests', 'json', 'database', 'page', 'object' ]
 
