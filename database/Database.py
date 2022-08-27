@@ -1,7 +1,6 @@
 from PyNotion import *
-from PyNotion.page import *
+from PyNotion.page.Page import Page
 from PyNotion.object import *
-from PyNotion.syntax import *
 
 
 class Database(BaseObject):

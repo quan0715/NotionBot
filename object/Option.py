@@ -36,7 +36,7 @@ class SelectProperty(PropertyBase):
 class MultiSelectProperty(PropertyBase):
     def __init__(self, *option_list):
         super().__init__(Option.Type.multi_select)
-        self.template[self.type] = {"options": [{"name": o[0], "color": o[1]} for o in option_list]}
+        self.template[self.type] = {"options": [option.make() for option in option_list]}
 
 
 class SelectValue(SelectProperty):

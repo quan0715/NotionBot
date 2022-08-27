@@ -1,7 +1,6 @@
-
 from PyNotion import *
 from PyNotion.object import *
-from PyNotion.database import *
+#from PyNotion.database.Database import Database
 from PyNotion.database.Property import *
 
 
@@ -69,8 +68,10 @@ class Page(BaseObject):
             template.update(dict(properties=properties.make()))
 
         r = requests.post(self.DatabaseAPI, headers=self.bot.patch_headers, data=json.dumps(template))
-        if r.status_code == 200:
-            print(f"database {title} 創建成功,你可以在 page_id {self.object_id} 找到他")
-            return r.json()
-        else:
-            print("error", r.json()['message'])
+        return r
+        # if r.status_code == 200:
+        #     print(f"database {title} 創建成功,id {r.json()['id']} ")
+        #     return r.json()
+        #
+        # else:
+        #     print("error", r.json()['message'])

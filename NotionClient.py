@@ -97,20 +97,10 @@ class Notion:
             data = target.parent.post_template(data)
         target.update(data)
 
-    def create_new_database(self, title: str, parent: Page, property_object: PropertyObject):
-        """
-        :param property_object: PropertyObject: properties name and their corresponding value type
-        :param title: str object, set the title of the database, request
-        :param parent: page, set the database parent in which page
-        """
-        template = {
-            "parent": Parent(parent_type=Parent.Type.page, parent_id=parent.object_id).template,
-            "title": Text(content=title).template,
-            "properties": property_object.make(),
-        }
-        r = requests.post(Database.API, headers=self.patch_headers, data=json.dumps(template))
+    def create_new_database(self, parent: Page, title=None, properties=None, icon=None, cover=None, is_inline=False):
+        r = parent.create_database(title=title, properties=properties,icon=icon,cover=cover,is_inline=is_inline)
         if r.status_code == 200:
-            print(f"database {title} 創建成功,你可以在 page_id {parent.object_id} 找到他")
-            return r.json()
+            print(f"create_new_database successfully id {r.json()['id']} ")
+            return Database(self, r.json()['id'])
         else:
             print(r.json()['message'])
