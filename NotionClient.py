@@ -52,16 +52,13 @@ class Notion:
         }
         response = requests.request("POST", self.search_api, json=payload, headers=self.patch_headers)
         if response.json()['results']:
-            # print(response.text)
             text = response.json()['results'][0]
             database_id = text['id']
-            # page_id = text['parent']['page_id']
-            # print(page_id)
-            # page = page(page_id=page_id,Bot=self)
+            print(f"fetching database {title} successfully")
             return Database(bot=self, database_id=database_id)
+
         else:
-            print(f"Can't find DataBase {title}")
-            return None
+            print(f"Can't find database {title}, check if it exist in your notion page")
 
     def fetch_page(self, title):
         payload = {
@@ -83,7 +80,6 @@ class Notion:
 
         return None
 
-
     @staticmethod
     def create_new_page(parent: Union[Page, Database], data):
         if isinstance(parent, Database):
@@ -95,14 +91,13 @@ class Notion:
     def append_block(self, target_page: Page, children_array):
         target_page.append_children(children_array)
 
-    def update_page(self,target, data):
+    def update_page(self, target, data):
         if isinstance(target.parent, Database):
             data = target.parent.post_template(data)
         target.update(data)
 
-
     def create_new_database(self, parent: Page, title=None, properties=None, icon=None, cover=None, is_inline=False):
-        r = parent.create_database(title=title, properties=properties,icon=icon,cover=cover,is_inline=is_inline)
+        r = parent.create_database(title=title, properties=properties, icon=icon, cover=cover, is_inline=is_inline)
         if r.status_code == 200:
             print(f"create_new_database successfully id {r.json()['id']} ")
             return Database(self, r.json()['id'])

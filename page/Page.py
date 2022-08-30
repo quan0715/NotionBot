@@ -1,5 +1,7 @@
 from PyNotion import *
 from PyNotion.object import *
+import aiohttp
+import asyncio
 #from PyNotion.database.Database import Database
 from PyNotion.database.Property import *
 
@@ -20,15 +22,15 @@ class Page(BaseObject):
     def retrieve(self, **kwargs):
         return super().retrieve(self.page_url)
 
-    def retrieve_page_data(self):
-        # database only
-        if not isinstance(self.parent, Database):
-            print("can't change to dataframe")
-            return False
-        r = self.retrieve()
-        properties = r['properties']
-        result = super().properties_data(properties)
-        return result
+    # def retrieve_page_data(self):
+    #     # database only
+    #     if not isinstance(self.parent, Database):
+    #         print("can't change to dataframe")
+    #         return False
+    #     r = self.retrieve()
+    #     properties = r['properties']
+    #     result = super().properties_data(properties)
+    #     return result
 
     def update(self, data, **kwargs):
         return super().update(self.page_url, data)

@@ -1,7 +1,8 @@
 from PyNotion import *
 from PyNotion.page.Page import Page
 from PyNotion.object import *
-
+import asyncio
+import aiohttp
 
 class Database(BaseObject):
     API = "https://api.notion.com/v1/databases/"
@@ -18,6 +19,18 @@ class Database(BaseObject):
 
     def update(self, data, **kwargs):
         return super().update(self.database_url, data)
+
+    async def async_post(self, data, session):
+        async with session.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make())) as resp:
+            print(resp.status)
+            print(await resp.text())
+            return resp
+            # try:
+            #     return Page(bot=self.bot, page_id=str(resp.json()['id']))
+            # except KeyError:
+            #     print("Create failed")
+            #     print(resp.json()['message'])
+            #     return resp.json()['message']
 
     def post(self, data):
         r = requests.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make()))
