@@ -1,20 +1,22 @@
 from PyNotion import *
-from PyNotion import Database, Page
-from PyNotion.Object import *
+from PyNotion.database import *
+from PyNotion.page import *
+from typing import Union
+from PyNotion.object import *
 
 
 class Notion:
     user_api = "https://api.notion.com/v1/users/me"
+    api = f'https://api.notion.com/v1'
+    search_api = 'https://api.notion.com/v1/search'
+    notion_version = "2022-06-28"
+    search_database_api = 'https://api.notion.com/v1/databases'
 
-    def __init__(self, auth):
+    def __init__(self, auth: str):
         """
         :param auth: your notion integration internal token
         """
         self.auth = auth
-        self.url = f'https://api.notion.com/v1'
-        self.search_url = self.url + "/search"
-        self.search_database = self.url + "/databases?page_size=100"
-        self.notion_version = "2022-02-22"
         self.headers = {
             "Authorization": f"Bearer {self.auth}",
             "Notion-Version": self.notion_version,
@@ -48,14 +50,14 @@ class Notion:
             'filter': {'value': 'database', 'property': 'object'},
             'page_size': 100
         }
-        response = requests.request("POST", self.search_url, json=payload, headers=self.patch_headers)
+        response = requests.request("POST", self.search_api, json=payload, headers=self.patch_headers)
         if response.json()['results']:
             # print(response.text)
             text = response.json()['results'][0]
             database_id = text['id']
             # page_id = text['parent']['page_id']
             # print(page_id)
-            # page = Page(page_id=page_id,Bot=self)
+            # page = page(page_id=page_id,Bot=self)
             return Database(bot=self, database_id=database_id)
         else:
             print(f"Can't find DataBase {title}")
@@ -67,57 +69,42 @@ class Notion:
             'filter': {'value': 'page', 'property': 'object'},
             'page_size': 100
         }
-        response = requests.post(self.search_url, json=payload, headers=self.patch_headers)
+        response = requests.post(self.search_api, json=payload, headers=self.patch_headers)
         # print(response.json())
         if response.status_code == 200:
             # print(response.text)
             text = response.json()['results'][0]
             page_id = text['id']
             # print(page_id)
-            print(f"fetch {title} Page successfully")
+            print(f"fetch {title} page successfully")
             return Page(page_id=page_id, bot=self)
         else:
-            print(f"Can't find Page {title}")
+            print(f"Can't find page {title}")
 
         return None
 
-    def create_new_page(self, data, database=None):
-        if database:
-            p = database.post(database.post_template(data))
-        else:
-            p = Page.create_page(self, data)
-        return p
 
-    def append_block(self, target_page, children_array):
-        pass
+    @staticmethod
+    def create_new_page(parent: Union[Page, Database], data):
+        if isinstance(parent, Database):
+            return parent.post(parent.new_page(data))
+
+        elif isinstance(parent, Page):
+            return parent.create_page(data)
+
+    def append_block(self, target_page: Page, children_array):
+        target_page.append_children(children_array)
 
     def update_page(self,target, data):
         if isinstance(target.parent, Database):
             data = target.parent.post_template(data)
         target.update(data)
 
-    def create_post_template(self, target, data):
-        template = {
-            'parent': ParentObject(target.type, target.id).template,
-            'archived': False,
-            'properties': {}
-        }
 
-    def create_new_database(self, title: str, parent: Page, property_object: PropertyObject):
-        """
-        :param property_object: PropertyObject: properties name and their corresponding value type
-        :param title: str object, set the title of the database, request
-        :param parent: Page, set the database parent in which page
-        """
-        template = {
-            "parent": ParentObject(parent_type=ParentType.page, parent_id=parent.object_id).template,
-            "title": TextObject(content=title).template,
-            "properties": property_object.get_template(),
-        }
-        #print(template)
-        r = requests.post(Database.DatabaseAPI, headers=self.patch_headers, data=json.dumps(template))
+    def create_new_database(self, parent: Page, title=None, properties=None, icon=None, cover=None, is_inline=False):
+        r = parent.create_database(title=title, properties=properties,icon=icon,cover=cover,is_inline=is_inline)
         if r.status_code == 200:
-            print(f"database {title} 創建成功,你可以在 page_id {parent.object_id} 找到他")
-            return r.json()
+            print(f"create_new_database successfully id {r.json()['id']} ")
+            return Database(self, r.json()['id'])
         else:
             print(r.json()['message'])
