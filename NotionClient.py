@@ -83,7 +83,7 @@ class Notion:
 
     def create_new_page(self, data, database=None):
         if database:
-            p = database.post(self, database.make_post(data))
+            p = database.post(database.post_template(data))
         else:
             p = Page.create_page(self, data)
         return p
@@ -110,12 +110,12 @@ class Notion:
         :param parent: Page, set the database parent in which page
         """
         template = {
-            "parent": ParentObject(parent_type=ParentType.page_id, parent_id=parent.object_id).template,
+            "parent": ParentObject(parent_type=ParentType.page, parent_id=parent.object_id).template,
             "title": TextObject(content=title).template,
             "properties": property_object.get_template(),
         }
         #print(template)
-        r = requests.post(Database.database_api, headers=self.patch_headers, data=json.dumps(template))
+        r = requests.post(Database.DatabaseAPI, headers=self.patch_headers, data=json.dumps(template))
         if r.status_code == 200:
             print(f"database {title} 創建成功,你可以在 page_id {parent.object_id} 找到他")
             return r.json()

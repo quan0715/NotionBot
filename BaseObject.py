@@ -112,10 +112,11 @@ class Page(BaseObject):
     def update_emoji(self, emoji: str):
         return self.update(EmojiObject(emoji).get_json(), )
 
-    def create_page(self, data):
-        r = requests.post(Page.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data))
+    @classmethod
+    def create_page(cls, bot, data):
+        r = requests.post(Page.PageAPI, headers=bot.patch_headers, data=json.dumps(data))
         try:
-            return Page(bot=self.bot, page_id=str(r.json()['id']))
+            return Page(bot=bot, page_id=str(r.json()['id']))
         except KeyError:
             print("create failed")
             return r.json()
