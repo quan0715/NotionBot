@@ -1,6 +1,7 @@
 from PyNotion import *
 from PyNotion.database import *
 from PyNotion.page import *
+from typing import Union
 from PyNotion.object import *
 
 
@@ -82,14 +83,15 @@ class Notion:
 
         return None
 
-    def create_new_page(self, data, database=None):
-        if database:
-            p = database.post(self, database.make_post(data))
-        else:
-            p = Page.create_page(data)
-        return p
+    @staticmethod
+    def create_new_page(parent: Union[Page, Database], data):
+        if isinstance(parent, Database):
+            return parent.post(parent.new_page(data))
 
-    def append_block(self, target_page :Page, children_array):
+        elif isinstance(parent, Page):
+            return parent.create_page(data)
+
+    def append_block(self, target_page: Page, children_array):
         target_page.append_children(children_array)
 
     def update_page(self,target, data):
