@@ -91,8 +91,8 @@ class Database(BaseObject):
                 result[t].append(v)
         return result
 
-    def new_page(self, *post_list):
-        return DatabasePage(self, *post_list)
+    def new_page(self, *post_list, children=None):
+        return DatabasePage(self, *post_list, children=children)
 
 
     # def post_template(self, data: dict[str:str]) -> dict:
@@ -127,14 +127,17 @@ class Database(BaseObject):
 
 
 class DatabasePage:
-    def __init__(self, target: Database, *post_list):
+    def __init__(self, target: Database, *prop_list, children):
         self.template = {
             'parent': Parent(Parent.Type.database, target.object_id).make(),
             'archived': False,
-            'properties': {}
+            'properties': {},
         }
-        for p in post_list:
+        for p in prop_list:
             self.template['properties'].update(p.make())
+        
+        if children:
+            self.template.update(children.make())
 
     def make(self):
         return self.template

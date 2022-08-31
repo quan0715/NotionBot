@@ -2,6 +2,7 @@ from enum import Enum
 from PyNotion.database.Property import PropertyBase
 from datetime import datetime
 
+
 class Data:
     class Type(str, Enum):
         date = "date"
@@ -43,7 +44,6 @@ class Data:
         if isinstance(time, datetime):
             return time.isoformat()
         return time
-
 
     def make(self):
         return self.template
