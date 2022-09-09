@@ -125,7 +125,7 @@
 #         super().__init__(CheckBox.Type.checkbox)
 #
 #
-# class DataProperty(PropertyBase):
+# class DateProperty(PropertyBase):
 #     def __init__(self):
 #         super().__init__("date")
 #
@@ -155,7 +155,7 @@
 #         '''
 #         :param text_feature: dict(bold,italic,strikethrough,underline,code,color->ColorObject)
 #         :param plain_text: string word of text block
-#         :param href: string (optional) The URL of any link or internal Notion mention in this text, if any.
+#         :param href: string (optional) The BASE_URL of any link or internal Notion mention in this text, if any.
 #         :param type: string "text","mention", "equation".
 #         '''
 #         self.href = href

@@ -1,8 +1,10 @@
 from PyNotion import *
-from PyNotion.page.Page import Page
+from PyNotion.page.Page import Page, PageObject
 from PyNotion.object import *
 import asyncio
 import aiohttp
+from typing import Union
+
 
 class Database(BaseObject):
     API = "https://api.notion.com/v1/databases/"
@@ -20,7 +22,7 @@ class Database(BaseObject):
     def update(self, data, **kwargs):
         return super().update(self.database_url, data)
 
-    async def async_post(self, data, session):
+    async def async_post(self, data: PageObject, session):
         async with session.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make())) as resp:
             print(resp.status)
             print(await resp.text())
@@ -32,7 +34,7 @@ class Database(BaseObject):
             #     print(resp.json()['message'])
             #     return resp.json()['message']
 
-    def post(self, data):
+    def post(self, data: PageObject):
         r = requests.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make()))
         try:
             return Page(bot=self.bot, page_id=str(r.json()['id']))
@@ -91,54 +93,51 @@ class Database(BaseObject):
                 result[t].append(v)
         return result
 
-    def new_page(self, *post_list, children=None):
-        return DatabasePage(self, *post_list, children=children)
+    def new_page(self, prop_value, children=None, icon=None, cover=None) -> PageObject:
+        return PageObject(
+            parent=Parent(Parent.Type.database, self.object_id),
+            prop_value=prop_value,
+            children=children,
+            icon=icon,
+            cover=cover
+        )
+
+    def clear(self):
+        delete_list = self.query_database_page_list()
+        a = input(f"clear database id: {self.object_id} Y/N")
+        if a == "y" or a == "Y":
+            for database_page in delete_list:
+                database_page.delete_object()
+
+    async def async_clear(self, session):
+        pages = []
+        query = Query(page_size=100)
+        q = query.make()
+        async with session.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q)) as r:
+            json_result = await r.json()
+            pages.append(json_result["results"])
+            start_course = json_result["next_cursor"]
+
+        if start_course and query.page_size == 100:
+            while start_course:
+                query.start_cursor = start_course
+                query.page_size = 100
+                q = query.make()
+                async with session.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q)) as r:
+                    json_result = await r.json()
+                    pages.append(json_result["results"])
+                    start_course = json_result["next_cursor"]
+        pages_list = []  # list of page
+        for p in pages:
+            for col in p:
+                pages_list.append(col)
+
+        pages_list = [Page(self.bot, col['id'], parent=self) for col in pages_list]
+
+        # a = input(f"clear database id: {self.object_id} Y/N")
+        # if a == "y" or a == "Y":
+        tasks = [database_page.async_delete_object(session) for database_page in pages_list]
+        return await asyncio.gather(*tasks)
 
 
-    # def post_template(self, data: dict[str:str]) -> dict:
-    #     prop_dict = {}
-    #     for prop, value in data.items():
-    #         value_type = self.properties[prop]['type']
-    #         if value_type == Text.Type.title or value_type == Text.Type.rich_text:
-    #             prop_dict[prop] = {f'{value_type}': Text(content=str(value)).make()}
-    #         if value_type == Number.Type.number:
-    #             if type(value) == str:
-    #                 if value == '':
-    #                     value = "-1"
-    #                 if value.endswith('%'):
-    #                     value = value.split('%')[0]
-    #                 value = eval(value)
-    #             prop_dict[prop] = {'type': value_type, value_type: value}
-    #
-    #         if value_type == Option.Type.select:
-    #             prop_dict[prop] = {'type': 'select', 'select': {'name': value}}
-    #
-    #         if value_type == 'url':
-    #             prop_dict[prop] = Link(value).template
-    #
-    #         if value_type == 'date':
-    #             prop_dict[prop] = {'type': 'date', 'date': value}
-    #
-    #     return {
-    #         'parent': Parent(Parent.Type.database, self.object_id).make(),
-    #         'archived': False,
-    #         'properties': prop_dict
-    #     }
-
-
-class DatabasePage:
-    def __init__(self, target: Database, *prop_list, children):
-        self.template = {
-            'parent': Parent(Parent.Type.database, target.object_id).make(),
-            'archived': False,
-            'properties': {},
-        }
-        for p in prop_list:
-            self.template['properties'].update(p.make())
-        
-        if children:
-            self.template.update(children.make())
-
-    def make(self):
-        return self.template
 

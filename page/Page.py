@@ -7,6 +7,19 @@ from PyNotion.database.Property import *
 
 
 class Page(BaseObject):
+    @classmethod
+    def page_object(cls, parent: Parent, prop_value: PropertyValue, children: Children, icon: Emoji, cover: File):
+        r = dict(parent=parent.make(), archived=False)
+        r.update(prop_value.make())
+        if children:
+            r.update(children.make())
+        if icon:
+            r['icon'] = icon.make()
+        if cover:
+            r['cover'] = cover.make()
+
+        return r
+
     def __init__(self, bot, page_id, parent=None):
         super().__init__(bot, page_id)
         self.page_url = BaseObject.PageAPI + self.object_id
@@ -21,16 +34,6 @@ class Page(BaseObject):
 
     def retrieve(self, **kwargs):
         return super().retrieve(self.page_url)
-
-    # def retrieve_page_data(self):
-    #     # database only
-    #     if not isinstance(self.parent, Database):
-    #         print("can't change to dataframe")
-    #         return False
-    #     r = self.retrieve()
-    #     properties = r['properties']
-    #     result = super().properties_data(properties)
-    #     return result
 
     def update(self, data, **kwargs):
         return super().update(self.page_url, data)
@@ -77,3 +80,18 @@ class Page(BaseObject):
         #
         # else:
         #     print("error", r.json()['message'])
+
+
+class PageObject:
+    def __init__(self, parent: Parent, prop_value: PropertyValue, children: Children, icon: Emoji, cover: File):
+        self.template = dict(parent=parent.make(), archived=False)
+        self.template.update(prop_value.make())
+        if children:
+            self.template.update(children.make())
+        if icon:
+            self.template['icon'] = icon.make()
+        if cover:
+            self.template['cover'] = cover.make()
+
+    def make(self):
+        return self.template

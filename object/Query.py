@@ -31,6 +31,26 @@ class ConditionFilters(Filter):
         self.template = {self.operator: [f.template for f in self.filter_list]}
 
 
+class SearchSort:
+    class Direction(str, Enum):
+        ascending = "ascending"
+        descending = "descending"
+
+    class Timestamp(str, Enum):
+        created_time = "created_time"
+        last_edited_time = "last_edited_time"
+
+    def __init__(self,
+                 direction: Direction = Direction.ascending,
+                 timestamp: Timestamp = Timestamp.created_time):
+        self.direction = direction
+        self.timestamp = timestamp
+        self.template = dict(sort=dict(direction=self.direction,timestamp=self.timestamp))
+
+    def make(self) -> dict:
+        return self.template
+
+
 class SortObject:
     class Direction(str, Enum):
         asc = "ascending"

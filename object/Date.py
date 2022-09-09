@@ -3,7 +3,7 @@ from PyNotion.database.Property import PropertyBase
 from datetime import datetime
 
 
-class Data:
+class Date:
     class Type(str, Enum):
         date = "date"
         created_time = "created_time"
@@ -34,8 +34,8 @@ class Data:
         self.time_zone = time_zone
 
         self.template = dict(
-            start=Data.iso_format(self.start),
-            end=Data.iso_format(self.end),
+            start=Date.iso_format(self.start),
+            end=Date.iso_format(self.end),
             time_zone=self.time_zone,
         )
 
@@ -49,12 +49,12 @@ class Data:
         return self.template
 
 
-class DataProperty(PropertyBase):
+class DateProperty(PropertyBase):
     def __init__(self):
         super().__init__("date")
 
 
-class DataValue(DataProperty):
+class DateValue(DateProperty):
     def __init__(self, key, value):
         super().__init__()
         self.value = value

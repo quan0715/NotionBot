@@ -58,7 +58,7 @@ class PropertyBase:
 #         super().__init__(CheckBox.Type.checkbox)
 
 
-# class DataProperty(PropertyBase):
+# class DateProperty(PropertyBase):
 #     def __init__(self):
 #         super().__init__("date")
 

@@ -1,5 +1,5 @@
 from PyNotion.object import *
-
+from typing import Union
 
 class BaseBlockObject:
     def __init__(self, block_type, color=Colors.Text.default, text_block=None, children=None):
@@ -50,6 +50,14 @@ class BaseBlockObject:
 
 
 class TextBlock(BaseBlockObject):
+    @classmethod
+    def check_length_and_split(cls, target: str):
+        if len(target) > 1999:
+            s, e, k = 0, 2000, 0
+            return [
+                target[s+k:e+k] for k in range(0,len(target),2000)
+            ]
+        return False
     def __init__(self, content="This is Text", link=None, annotations=None):
         super().__init__(block_type="text", text_block=None)
         self.content = content

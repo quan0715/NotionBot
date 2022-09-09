@@ -2,9 +2,15 @@ from PyNotion import *
 from .Children import Children
 import aiohttp
 import asyncio
+from enum import Enum
 
 
 class BaseObject:
+    class Type(Enum):
+        database = "database"
+        page = "page"
+        block = "block"
+
     BlockAPI = "https://api.notion.com/v1/blocks/"
     DatabaseAPI = "https://api.notion.com/v1/databases/"
     PageAPI = 'https://api.notion.com/v1/pages/'
@@ -28,6 +34,11 @@ class BaseObject:
         url = self.__class__.BlockAPI + self.object_id
         r = requests.delete(url, headers=self.bot.headers)
         return r.json()
+
+    async def async_delete_object(self, session):
+        url = self.__class__.BlockAPI + self.object_id
+        async with session.delete(url, headers=self.bot.headers) as resp:
+            return await resp.json()
 
     def retrieve_children(self):
         url = BaseObject.BlockAPI + self.object_id + "/children"
