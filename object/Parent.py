@@ -15,3 +15,6 @@ class Parent:
     def make(self) -> dict:
         self.template = {'type': self.parent_type, self.parent_type: self.parent_id}
         return self.template
+
+    def __repr__(self):
+        return f"Parent\ntype : {self.parent_type}\nid : {self.parent_id}"

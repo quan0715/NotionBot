@@ -8,19 +8,61 @@ from typing import Union
 
 class Database(BaseObject):
     API = "https://api.notion.com/v1/databases/"
+    object = "database"
 
     def __init__(self, bot, database_id: str):
         super().__init__(bot, database_id)
         self.database_url = BaseObject.DatabaseAPI + database_id
         self.database_query_url = f'{self.database_url}/query'
         self.result_list = self.query_database()
-        self.database_detail, self.properties, self.parent = self.database_detail()
+        self.details: dict = self.retrieve()
+        self.created_by = self.details['created_by']
+        self.last_edited_by = self.details['last_edited_by']
+        self.last_edited_time = self.details['last_edited_time']
+        self.title = self.details['title'][0]['text']['content']
+        self.is_inline = self.details['is_inline']
+        self.archived = self.details['archived']
+        self.parent = self.get_parent()
+        self.properties = self.details['properties']
+        # self.properties =
+        # self.database_detail, self.properties, self.parent = self.database_detail()
 
-    def retrieve(self, **kwargs):
+    def __repr__(self):
+        return f"""------------------------------------------------------
+{self.parent}
+------------------------------------------------------
+Object : {self.object} 
+title : {self.title}
+id : {self.object_id}
+------------------------------------------------------
+created_by : {self.created_by}
+last_edited_by : {self.last_edited_by}
+last_edited_time : {self.last_edited_time}
+------------------------------------------------------
+is_inline : {self.is_inline}
+archive : {self.archived}
+url : {self.database_url}
+------------------------------------------------------
+Property : 
+{self.print_properties()}
+------------------------------------------------------
+"""
+
+    def retrieve(self, **kwargs) -> dict:
         return super().retrieve(self.database_url)
 
     def update(self, data, **kwargs):
         return super().update(self.database_url, data)
+
+    def print_properties(self):
+        r = [f"\t{v['name']} --- {v['type']} --- {v['id']}" for v in self.properties.values()]
+        return "\n".join(r)
+
+    def get_parent(self):
+        return Parent(
+            parent_type=self.details['parent']['type'],
+            parent_id=self.details['parent'][self.details['parent']['type']]
+        )
 
     async def async_post(self, data: PageObject, session):
         async with session.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make())) as resp:
