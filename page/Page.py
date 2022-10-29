@@ -7,6 +7,8 @@ from PyNotion.database.Property import *
 
 
 class Page(BaseObject):
+    object = "page"
+
     @classmethod
     def page_object(cls, parent: Parent, prop_value: PropertyValue, children: Children, icon: Emoji, cover: File):
         r = dict(parent=parent.make(), archived=False)
@@ -25,8 +27,40 @@ class Page(BaseObject):
         self.page_url = BaseObject.PageAPI + self.object_id
         self.page_property = self.page_url + "/properties/"
         self.patch_url = f"https://api.notion.com/v1/blocks/{self.object_id}/children"
-        self.parent_root = Parent(parent_type=Parent.Type.page, parent_id=self.object_id)
-        self.parent = parent
+        self.details: dict = self.retrieve()
+        self.created_by: dict = self.details['created_by']
+        self.last_edited_by: dict = self.details['last_edited_by']
+        self.url = self.details['url']
+        self.last_edited_time = self.details['last_edited_time']
+        self.archived = self.details['archived']
+        self.parent = self.get_parent()
+        self.properties = self.details['properties']
+
+    def __repr__(self):
+        return f"""------------------------------------------------------
+{self.parent}
+------------------------------------------------------
+Object : {self.object} 
+id : {self.object_id}
+------------------------------------------------------
+created_by : {self.created_by}
+last_edited_by : {self.last_edited_by}
+last_edited_time : {self.last_edited_time}
+------------------------------------------------------
+archive : {self.archived}
+url : {self.page_url}
+------------------------------------------------------
+"""
+
+    def print_properties(self):
+        r = [f"\t{k} --- {v['type']} --- {v['id']}" for k,v in self.properties.items()]
+        return "\n".join(r)
+
+    def get_parent(self):
+        return Parent(
+            parent_type=self.details['parent']['type'],
+            parent_id=self.details['parent'][self.details['parent']['type']]
+        )
 
     def retrieve_property_item(self,property_id):
         r = requests.get(url=self.page_property+property_id, headers=self.bot.headers)

@@ -31,7 +31,7 @@ class Database(BaseObject):
         return f"""------------------------------------------------------
 {self.parent}
 ------------------------------------------------------
-Object : {self.object} 
+Object : {self.object}
 title : {self.title}
 id : {self.object_id}
 ------------------------------------------------------
@@ -43,7 +43,7 @@ is_inline : {self.is_inline}
 archive : {self.archived}
 url : {self.database_url}
 ------------------------------------------------------
-Property : 
+Property :
 {self.print_properties()}
 ------------------------------------------------------
 """
@@ -66,8 +66,10 @@ Property :
 
     async def async_post(self, data: PageObject, session):
         async with session.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make())) as resp:
-            print(resp.status)
-            print(await resp.text())
+            if resp.status != 200:
+                print(resp.status)
+                print(await resp.text())
+                print(data.template)
             return resp
             # try:
             #     return Page(bot=self.bot, page_id=str(resp.json()['id']))
@@ -105,21 +107,26 @@ Property :
         query = query if query else Query(page_size=100)
         q = query.make()
         r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
-        pages.append(r.json()["results"])
-        start_course = r.json()["next_cursor"]
-        if start_course and query.page_size == 100:
-            while start_course:
-                query.start_cursor = start_course
-                query.page_size = 100
-                q = query.make()
-                r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
-                pages.append(r.json()["results"])
-                start_course = r.json()["next_cursor"]
-        pages_list = []  # list of page
-        for p in pages:
-            for col in p:
-                pages_list.append(col)
-        return pages_list
+        try:
+            pages.append(r.json()["results"])
+            start_course = r.json()["next_cursor"]
+            if start_course and query.page_size == 100:
+                while start_course:
+                    query.start_cursor = start_course
+                    query.page_size = 100
+                    q = query.make()
+                    r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
+                    pages.append(r.json()["results"])
+                    start_course = r.json()["next_cursor"]
+            pages_list = []  # list of page
+            for p in pages:
+                for col in p:
+                    pages_list.append(col)
+            return pages_list
+
+        except:
+            print(r.json())
+
 
     def query_database_page_list(self, query=None):
         results_list = self.query_database(query)
