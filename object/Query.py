@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class Filter:
@@ -24,7 +25,7 @@ class ConditionFilters(Filter):
         And = "and"
         Or = "or"
 
-    def __init__(self, operator: Operator, filter_list: list[Filter]):
+    def __init__(self, operator: Operator, filter_list: List[Filter]):
         super().__init__()
         self.operator = operator
         self.filter_list = filter_list
@@ -77,7 +78,7 @@ class SortObject:
 
 
 class Query:
-    def __init__(self, filters: Filter = None, sorts: list[SortObject] = None,
+    def __init__(self, filters: Filter = None, sorts: List[SortObject] = None,
                  start_cursor: str = None, page_size: int = None):
         self.filters = filters
         self.sorts = sorts

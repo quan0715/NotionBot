@@ -47,7 +47,7 @@ class SelectValue(SelectProperty):
             self.value = Option(self.value)
 
         self.value.value()
-        self.template = {key: {self.type: self.value.make()}}
+        self.template = {key: self.value.make()}
 
 
 class MultiSelectValue(MultiSelectProperty):

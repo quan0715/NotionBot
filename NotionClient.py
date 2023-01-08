@@ -7,8 +7,6 @@ from PyNotion.object import *
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
-
 
 class Notion:
     user_api = "https://api.notion.com/v1/users/me"
@@ -93,8 +91,6 @@ class Notion:
 
         return None
 
-
-
     def append_block(self, target_page: Page, children_array):
         target_page.append_children(children_array)
 
@@ -113,11 +109,11 @@ class Notion:
 
 
 class Async_Notion_Bot:
-    USER_API = os.getenv("USER_API")
-    API = os.getenv("API")
-    SEARCH_API = os.getenv("SEARCH_API")
-    NOTION_VERSION = os.getenv("NOTION_VERSION")
-    DATABASE_API = os.getenv("DATABASE_API")
+    user_api = "https://api.notion.com/v1/users/me"
+    api = f'https://api.notion.com/v1'
+    search_api = 'https://api.notion.com/v1/search'
+    notion_version = "2022-06-28"
+    search_database_api = 'https://api.notion.com/v1/databases'
 
     def __init__(self, auth: str, session):
         """

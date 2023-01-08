@@ -84,7 +84,7 @@ Property :
             return Page(bot=self.bot, page_id=str(r.json()['id']))
         except KeyError:
             print("Create failed")
-            print(r.json()['message'])
+            # print(r.json()['message'])
             return r.json()['message']
 
     def get_properties(self):

@@ -26,5 +26,5 @@ class DualRelation(PropertyBase):
 
 
 class RelationValue:
-    def __init__(self, page_id: list[str]):
+    def __init__(self, page_id: List[str]):
         self.template = {"relation": [{p_id} for p_id in page_id]}

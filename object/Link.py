@@ -21,7 +21,7 @@ class UrlValue(UrlProperty):
         self.value = value
         if isinstance(self.value, str):
             self.value = Url(self.value)
-        self.template = {key: {self.type: self.value.make()}}
+        self.template = {key: self.value.make()}
 
 
 class Link(UrlProperty):

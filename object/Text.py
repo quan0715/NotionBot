@@ -1,3 +1,5 @@
+from typing import Union
+
 from .Link import Link
 from ..syntax import Colors
 from enum import Enum
@@ -58,13 +60,13 @@ class Text:
         self.content = content
         self.link = link
         self.annotations = annotations
-        self.template = [dict(type='text', text={'content': self.content, "link": None})]
+        self.template = dict(text={'content': self.content, "link": None})
 
         if self.link:
             self.link_object = Link(self.link)
-            self.template[0]['text']["link"] = self.link_object.template
+            self.template['text']['link'] = self.link_object.template
         if isinstance(self.annotations, Annotations):
-            self.template[0].update(dict(annotations=self.annotations.make()))
+            self.template.update(dict(annotations=self.annotations.make()))
 
     def update_link(self, url):
         self.link = url
@@ -92,14 +94,16 @@ class TitleValue(TitleProperty):
         if isinstance(self.value, str):
             self.value = Text(self.value)
 
-        self.template = {key: {self.type: self.value.make()}}
+        self.template = {key: [self.value.make()]}
 
 
 class TextValue(TextProperty):
-    def __init__(self, key, value):
+    def __init__(self, key, value: Union[str, Text]):
         super().__init__()
         self.value = value
         if isinstance(self.value, str):
             self.value = Text(self.value)
 
-        self.template = {key: {self.type: self.value.make()}}
+        #self.template = {key: {'name': key, self.type: [self.value.make()]}}
+        #TODO fix problem
+        self.template = {key: [self.value.make()]}

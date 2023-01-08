@@ -58,4 +58,4 @@ class DateValue(DateProperty):
     def __init__(self, key, value):
         super().__init__()
         self.value = value
-        self.template = {key: {self.type: self.value.make()}}
+        self.template = {key: self.value.make()}
