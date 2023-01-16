@@ -1,5 +1,5 @@
 from .Property import *
-from PyNotion.object import *
+from object import *
 
 
 # class TitleValue(TitleProperty):

@@ -1,5 +1,5 @@
-from PyNotion.syntax import *
-from PyNotion.object import *
+from syntax import *
+from object import *
 
 
 class PropertyObject:

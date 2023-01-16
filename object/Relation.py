@@ -1,5 +1,5 @@
 from enum import Enum
-from PyNotion.database.Property import *
+from database.Property import PropertyBase
 
 
 class RelationProperty(PropertyBase):

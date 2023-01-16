@@ -1,11 +1,14 @@
-from PyNotion import *
 from .Children import Children
-import aiohttp
 import asyncio
+import requests
 from enum import Enum
+import json
 
 
 class BaseObject:
+    """
+    The Base class for Database Page and ( Block? )
+    """
     class Type(Enum):
         database = "database"
         page = "page"
@@ -15,20 +18,45 @@ class BaseObject:
     DatabaseAPI = "https://api.notion.com/v1/databases/"
     PageAPI = 'https://api.notion.com/v1/pages/'
 
-    def __init__(self, bot, object_id):
+    def __init__(self, bot, object_id, object):
         self.bot = bot
+        self.object = object
         self.object_id = object_id
+        self.object_api = (BaseObject.PageAPI if object == "page" else BaseObject.DatabaseAPI) + self.object_id
+        self.parent_type = self.object + "_id"
+        self.created_time, self.last_edited_time = None, None
+        self.created_by, self.last_edited_by = None, None,
+        self.properties_list = []
 
-    def retrieve(self, url):
-        r = requests.get(url, headers=self.bot.headers)
-        return r.json()
+    def __repr__(self):
+        return f"------------------------------------------------------\n" \
+               f"Object : {self.object}\n" \
+               f"id : {self.object_id}\n" \
+               f"parent_type : {self.parent_type}\n" \
+               f"object_api : {self.object_id}\n" \
+               "------------------------------------------------------" \
 
-    def update(self, url, data):
-        data = data if isinstance(data, str) else json.dumps(data)
-        r = requests.patch(url, headers=self.bot.patch_headers, data=data)
-        if r.status_code != 200:
-            print(r.json()['message'])
-        return r.json()
+
+    def retrieve(self):
+        result = requests.get(self.object_api, headers=self.bot.headers)
+        result = result.json()
+        self.created_time = result['created_time']
+        self.last_edited_time = result['last_edited_time']
+        self.created_by = result['created_by']
+        self.last_edited_by = result['last_edited_by']
+        self.properties_list = result['properties']
+        return result
+
+    def print_properties(self):
+        r = [f"\t{v['name']} --- {v['type']} --- {v['id']}" for v in self.properties_list.values()]
+        return "\n".join(r)
+
+    # def update(self, url, data):
+    #     # data = data if isinstance(data, str) else json.dumps(data)
+    #     r = requests.patch(url, headers=self.bot.headers, json=data)
+    #     if r.status_code != 200:
+    #         print(r.json()['message'])
+    #     return r.json()
 
     def delete_object(self):
         url = self.__class__.BlockAPI + self.object_id

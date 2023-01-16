@@ -1,5 +1,5 @@
-from PyNotion.syntax import *
-from PyNotion.database.Property import PropertyBase
+from ..syntax import *
+from ..database.Property import PropertyBase
 from enum import Enum
 
 

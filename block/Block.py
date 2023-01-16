@@ -1,14 +1,11 @@
-from PyNotion.object import *
+from object import *
 
 
 class Block(BaseObject):
     def __init__(self, bot, block_id):
-        super().__init__(bot, block_id)
-        self.block_url = BaseObject.BlockAPI + self.object_id
-        self.children_url = f'{self.block_url}/children'
+        super().__init__(bot, block_id, 'block')
+        self.children_url = f'{self.object_api}/children'
 
-    def retrieve(self, **kwargs):
-        return super().retrieve(self.block_url)
 
-    def update(self, data, **kwargs):
-        return super().update(self.block_url, data)
+    # def update(self, data, **kwargs):
+    #     return super().update(self.block_api, data)

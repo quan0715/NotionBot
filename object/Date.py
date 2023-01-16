@@ -1,5 +1,5 @@
 from enum import Enum
-from PyNotion.database.Property import PropertyBase
+from ..database.Property import PropertyBase
 from datetime import datetime
 
 

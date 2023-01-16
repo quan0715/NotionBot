@@ -1,9 +1,9 @@
 from enum import Enum
-from PyNotion.database.Property import PropertyBase
+from NotionObject import *
 
 
 class Url:
-    def __init__(self, url:str):
+    def __init__(self, url: str):
         self.url = url
 
     def make(self):

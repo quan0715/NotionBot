@@ -1,5 +1,6 @@
-from PyNotion.object import *
+from object import *
 from typing import Union
+
 
 class BaseBlockObject:
     def __init__(self, block_type, color=Colors.Text.default, text_block=None, children=None):

@@ -1,12 +1,11 @@
 from typing import Union
 
-from .Link import Link
-from ..syntax import Colors
+from syntax import Colors
 from enum import Enum
-from PyNotion.database.Property import PropertyBase
+from .NotionObject import *
 
 
-class Annotations:
+class Annotations(NotionObject):
     class Type(str, Enum):
         bold = "bold"
         italic = "italic"
@@ -15,24 +14,16 @@ class Annotations:
         code = "code"
         color = "color"
 
-    def __init__(self, bold: bool = False, italic: bool = False,
-                 strikethrough: bool = False, underline: bool = False,
-                 code: bool = False, color=Colors.Text.default):
-
-        self.template = {
-                'bold': bold,
-                'italic': italic,
-                'strikethrough': strikethrough,
-                'underline': underline,
-                'code': code,
-                'color': color
-        }
-
-    def make(self):
-        return self.template
+    def __init__(self, color=Colors.Text.default, **kwargs):
+        super().__init__()
+        self.template = kwargs
+        self.template['color'] = color
 
 
-class Text:
+class Text(NotionObject):
+    """
+    This is Notion Text object class, the element of the rich_text array
+    """
     class Type(str, Enum):
         title = "title"
         rich_text = "rich_text"
@@ -56,54 +47,53 @@ class Text:
         # Only return pages where the page property value is present.
         is_not_empty = "is_not_empty"
 
-    def __init__(self, content="", annotations=None, link=None):
+    def __init__(self,
+                 content="This is text",
+                 annotations: Union[Annotations, dict] = None,
+                 link: str = None):
+        super().__init__()
         self.content = content
         self.link = link
-        self.annotations = annotations
+        self.annotations = Annotations(**annotations) if isinstance(annotations, dict) else annotations
         self.template = dict(text={'content': self.content, "link": None})
-
-        if self.link:
-            self.link_object = Link(self.link)
-            self.template['text']['link'] = self.link_object.template
+        # if self.link:
+        #     self.link_object = Link(self.link)
+        #     self.template['text']['link'] = self.link_object.template
         if isinstance(self.annotations, Annotations):
             self.template.update(dict(annotations=self.annotations.make()))
 
-    def update_link(self, url):
-        self.link = url
-        self.link_object.update(self.link)
-        self.template[0]['text']["link"] = self.link_object.make()
-
-    def make(self):
-        return self.template
+    # def update_link(self, url):
+    #     self.link = url
+    #     self.link_object.update(self.link)
+    #     self.template[0]['text']["link"] = self.link_object.make()
 
 
 class TextProperty(PropertyBase):
     def __init__(self):
-        super().__init__(prop_type="rich_text")
+        PropertyBase.__init__(self, prop_type="rich_text")
 
 
 class TitleProperty(PropertyBase):
     def __init__(self):
-        super().__init__(prop_type="title")
+        PropertyBase.__init__(self, prop_type="title")
 
 
 class TitleValue(TitleProperty):
-    def __init__(self, key, value):
-        super().__init__()
+    def __init__(self, value):
+        super(TitleProperty).__init__()
         self.value = value
         if isinstance(self.value, str):
             self.value = Text(self.value)
 
-        self.template = {key: [self.value.make()]}
+        self.template = {"title": [self.value.make()]}
 
 
 class TextValue(TextProperty):
-    def __init__(self, key, value: Union[str, Text]):
+    def __init__(self, *values: Union[str, Text]):
         super().__init__()
-        self.value = value
-        if isinstance(self.value, str):
-            self.value = Text(self.value)
-
-        #self.template = {key: {'name': key, self.type: [self.value.make()]}}
-        #TODO fix problem
-        self.template = {key: [self.value.make()]}
+        self.template = {'rich_text': []}
+        self.values = values
+        for v in values:
+            if isinstance(v, str):
+                v = Text(v)
+            self.template['rich_text'].append(v.make())
