@@ -79,13 +79,10 @@ class TitleProperty(PropertyBase):
 
 
 class TitleValue(TitleProperty):
-    def __init__(self, value):
+    def __init__(self, *contents):
         super(TitleProperty).__init__()
-        self.value = value
-        if isinstance(self.value, str):
-            self.value = Text(self.value)
-
-        self.template = {"title": [self.value.make()]}
+        self.template = TextValue(*contents).make()
+        self.template = {"title": self.template['rich_text']}
 
 
 class TextValue(TextProperty):

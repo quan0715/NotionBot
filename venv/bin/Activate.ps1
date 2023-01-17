@@ -137,7 +137,7 @@ function Get-PyVenvConfig(
 
     if ($pyvenvConfigPath) {
 
-        Write-Verbose "File exists, parse `key = value` lines"
+        Write-Verbose "FileValue exists, parse `key = value` lines"
         $pyvenvConfigContent = Get-Content -Path $pyvenvConfigPath
 
         $pyvenvConfigContent | ForEach-Object {

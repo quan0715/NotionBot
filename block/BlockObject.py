@@ -16,8 +16,8 @@ class BaseBlockObject:
 
     def update_file(self, file):
         if isinstance(file, str):
-            file = File(file)
-        if isinstance(file, File):
+            file = FileValue(file)
+        if isinstance(file, FileValue):
             self.template[self.block_type] = file.make()
 
     @classmethod
@@ -339,7 +339,7 @@ class TableRowBlock(BaseBlockObject):
 #     Bookmark = BookmarkBlock
 #     Equation = EquationBlock
 #     Divider = DividerBlock
-#     File = FileBlockObject
+#     FileValue = FileBlockObject
 #     TableOfContent = TableOfContentBlock
 #     Breadcrumb = BreadcrumbBlock
 #     ColumnList = ColumnListBlock

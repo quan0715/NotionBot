@@ -11,7 +11,7 @@ class PageObject(NotionObject):
         :param properties: Properties value of this page. please use Properties object or json format
         :param children: Page content for the new page as an array of block objects. please use Children object or json format
         :param icon: Page icon for the new page. Please use Emoji Object or string emoji.
-        :param cover: Page cover for the new page. Please use File Object.
+        :param cover: Page cover for the new page. Please use FileValue Object.
         :param archived: If it is True delete page otherwise restore
         """
         super().__init__()
@@ -52,7 +52,7 @@ class Page(BaseObject):
                         properties: Properties = Properties(),
                         children: Union[Children, dict] = Children(),
                         icon: Union[Emoji, str] = Emoji('🐧'),
-                        cover: Union[File, str] = None):
+                        cover: Union[FileValue, str] = None):
         page_object = PageObject(
             parent=Parent(self),
             properties=properties,

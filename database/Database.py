@@ -12,13 +12,13 @@ class DatabaseObject(NotionObject):
         :param parent: the database parent or page parent. please use Parent object or json format
         :param properties: Properties value of this page. please use Properties object or json format
         :param icon: Page icon for the new page. Please use Emoji Object or string emoji.
-        :param cover: Page cover for the new page. Please use File Object.
+        :param cover: Page cover for the new page. Please use FileValue Object.
         :param archived: If it is True delete page otherwise restore\
         :param title: If it is True delete page otherwise restore
         """
         super().__init__()
         # self.template.update(title.make())
-        params = ['parent', 'properties', 'icon', 'cover', 'title']
+        params = ['parent', 'properties', 'icon', 'cover', 'title','description']
         self.template['archived'] = archived
         for key, value in kwargs.items():
             if key in params and value:
@@ -26,21 +26,17 @@ class DatabaseObject(NotionObject):
 
 
 class DatabaseDescription(NotionObject):
-    def __init__(self, *values: Union[str, Text]):
+    def __init__(self, *description: Union[str, Text]):
         super().__init__()
-        self.template = []
-        self.values = values
-        for v in values:
-            if isinstance(v, str):
-                v = Text(v)
-            self.template.append(v.make())
+        description = TextValue(*description).make()
+        self.template = description['rich_text']
 
 
 class DatabaseTitle(NotionObject):
-    def __init__(self, title):
+    def __init__(self, *contents):
         super().__init__()
-        title = TitleValue(title).make()
-        self.template = title['title']
+        title = TextValue(*contents).make()
+        self.template = title['rich_text']
 
 
 class Database(BaseObject):
@@ -51,7 +47,6 @@ class Database(BaseObject):
 
     def update(self, **kwargs):
         database_object = DatabaseObject(**kwargs)
-        # print(database_object)
         r = requests.patch(self.object_api, headers=self.bot.headers, json=database_object.make())
         if r.status_code == 200:
             return r.json()
@@ -61,7 +56,7 @@ class Database(BaseObject):
                         properties: Properties = Properties(),
                         children: Union[Children, dict] = Children(),
                         icon: Union[Emoji, str] = Emoji('🐧'),
-                        cover: Union[File, str] = None):
+                        cover: Union[FileValue, str] = None):
         database_object = DatabaseObject(
             parent=Parent(self),
             properties=properties,
@@ -73,6 +68,20 @@ class Database(BaseObject):
         r = requests.post(BaseObject.PageAPI, headers=self.bot.headers, json=database_object.make())
         if r.status_code == 200:
             return Page(bot=self.bot, page_id=str(r.json()['id']))
+        else:
+            return r.json()['message']
+
+    def query(self, query=None):
+        query = query if query else Query(page_size=100)
+        r = requests.post(self.database_query_api, headers=self.bot.headers, json=query.make())
+
+        if r.status_code == 200:
+            results = r.json()['results']
+            while r.json()['has_more']:
+                query = Query(page_size=100, start_cursor=r.json()['next_cursor'])
+                r = requests.post(self.database_query_api, headers=self.bot.headers, json=query.make())
+                results.extend(r.json()['results'])
+            return results
         else:
             return r.json()['message']
 
@@ -92,47 +101,6 @@ class Database(BaseObject):
     #         #     return resp.json()['message']
     #
 
-    # def get_properties(self):
-    #     # get database properties
-    #     r = requests.get(self.database_url, headers=self.bot.patch_headers)
-    #     result_dict = r.json()['properties']
-    #     result = {key: {"type": result_dict[key]['type'], "id": result_dict[key]['id']} for key in result_dict.keys()}
-    #     return result
-    #
-    # def database_detail(self):
-    #     r = self.retrieve()
-    #     result_dict = r['properties']
-    #     result = {key: {"type": result_dict[key]['type'], "id": result_dict[key]['id']} for key in result_dict.keys()}
-    #     parent_type = r['parent']['type']
-    #     parent_id = r['parent'][parent_type]
-    #     return r, result, Parent(parent_type, parent_id)
-    #
-    # def query_database(self, query=None):
-    #     pages = []
-    #     query = query if query else Query(page_size=100)
-    #     q = query.make()
-    #     r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
-    #     try:
-    #         pages.append(r.json()["results"])
-    #         start_course = r.json()["next_cursor"]
-    #         if start_course and query.page_size == 100:
-    #             while start_course:
-    #                 query.start_cursor = start_course
-    #                 query.page_size = 100
-    #                 q = query.make()
-    #                 r = requests.post(self.database_query_url, headers=self.bot.patch_headers, data=json.dumps(q))
-    #                 pages.append(r.json()["results"])
-    #                 start_course = r.json()["next_cursor"]
-    #         pages_list = []  # list of page
-    #         for p in pages:
-    #             for col in p:
-    #                 pages_list.append(col)
-    #         return pages_list
-    #
-    #     except:
-    #         print(r.json())
-    #
-    #
     # def query_database_page_list(self, query=None):
     #     results_list = self.query_database(query)
     #     results = [Page(self.bot, col['id'], parent=self) for col in results_list]
@@ -147,14 +115,6 @@ class Database(BaseObject):
     #             result[t].append(v)
     #     return result
     #
-    # def new_page(self, prop_value, children=None, icon=None, cover=None) -> PageObject:
-    #     return PageObject(
-    #         parent=Parent(Parent.Type.database, self.object_id),
-    #         prop_value=prop_value,
-    #         children=children,
-    #         icon=icon,
-    #         cover=cover
-    #     )
     #
     # def clear(self):
     #     delete_list = self.query_database_page_list()

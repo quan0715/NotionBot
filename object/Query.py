@@ -1,16 +1,9 @@
 from enum import Enum
 from typing import List
+from .NotionObject import *
+from typing import Union
 
-
-class Filter:
-    def __init__(self):
-        self.template = {}
-
-    def make(self) -> dict:
-        return self.template
-
-
-class PropertyFilter(Filter):
+class PropertyFilter(NotionObject):
     def __init__(self, prop: str, filter_type: str, condition: str, target):
         super().__init__()
         self.property = prop
@@ -20,19 +13,19 @@ class PropertyFilter(Filter):
         self.template = {"property": self.property, self.filter_type: {self.condition: self.target}}
 
 
-class ConditionFilters(Filter):
+class ConditionFilters(NotionObject):
     class Operator(str, Enum):
         And = "and"
         Or = "or"
 
-    def __init__(self, operator: Operator, filter_list: List[Filter]):
+    def __init__(self, operator: Operator, filter_list: List[Union[PropertyFilter, 'ConditionFilters']]):
         super().__init__()
         self.operator = operator
         self.filter_list = filter_list
         self.template = {self.operator: [f.template for f in self.filter_list]}
 
 
-class SearchSort:
+class SearchSort(NotionObject):
     class Direction(str, Enum):
         ascending = "ascending"
         descending = "descending"
@@ -44,15 +37,13 @@ class SearchSort:
     def __init__(self,
                  direction: Direction = Direction.ascending,
                  timestamp: Timestamp = Timestamp.created_time):
+        super().__init__()
         self.direction = direction
         self.timestamp = timestamp
         self.template = dict(sort=dict(direction=self.direction,timestamp=self.timestamp))
 
-    def make(self) -> dict:
-        return self.template
 
-
-class SortObject:
+class SortObject(NotionObject):
     class Direction(str, Enum):
         asc = "ascending"
         dec = "descending"
@@ -62,6 +53,7 @@ class SortObject:
         last_edited_time = "last_edited_time"
 
     def __init__(self, prop: str, direction="ascending"):
+        super().__init__()
         self.property = prop
         self.direction = direction
         self.template = {
@@ -69,17 +61,14 @@ class SortObject:
             "direction": self.direction,
         }
 
-    def make(self):
-        self.template = {
-            "property": self.property,
-            "direction": self.direction,
-        }
-        return self.template
 
-
-class Query:
-    def __init__(self, filters: Filter = None, sorts: List[SortObject] = None,
-                 start_cursor: str = None, page_size: int = None):
+class Query(NotionObject):
+    def __init__(self,
+                 filters: Union[PropertyFilter, ConditionFilters] = None,
+                 sorts: List[SortObject] = None,
+                 start_cursor: str = None,
+                 page_size: int = 100):
+        super().__init__()
         self.filters = filters
         self.sorts = sorts
         self.start_cursor = start_cursor

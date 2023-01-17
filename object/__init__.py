@@ -1,10 +1,10 @@
 from .BaseObject import BaseObject
 from .NotionObject import *
-# from .Query import *
+from .Query import *
 from .Parent import Parent
 from .Children import Children
-# from .Link import *
-from .File import File
+from .Link import *
+from .File import FileValue
 from .Text import *
 from .Emoji import Emoji
 # from .Option import *

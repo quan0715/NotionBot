@@ -86,23 +86,23 @@ class Notion:
                         properties: Union[Properties, dict] = Properties(),
                         children: Union[Children, dict] = Children(),
                         icon: Union[Emoji, str] = Emoji('🐧'),
-                        cover: Union[File, str] = None):
+                        cover: Union[FileValue, str] = None):
         """
         :param parent: the database parent or page parent. please use Parent object or json format
         :param properties: Properties value of this page. please use Properties object or json format
         :param children: Page content for the new page as an array of block objects. please use Children object or json format
         :param icon: Page icon for the new page. Please use Emoji Object or string emoji.
-        :param cover: Page cover for the new page. Please use File Object.
+        :param cover: Page cover for the new page. Please use FileValue Object.
         """
         if isinstance(parent, Page):
             return parent.create_new_page(properties=properties, children=children, icon=icon, cover=cover)
 
     def create_new_database(self,
-        parent: Union[Page, Parent],
-        title: Union[DatabaseTitle, str] = DatabaseTitle("new database"),
-        properties: Union[Properties, dict] = Properties(),
-        icon: Union[Emoji, str] = Emoji('🐧'),
-        cover: Union[File, str] = None):
+                            parent: Union[Page, Parent],
+                            title: Union[DatabaseTitle, str] = DatabaseTitle("new database"),
+                            properties: Union[Properties, dict] = Properties(),
+                            icon: Union[Emoji, str] = Emoji('🐧'),
+                            cover: Union[FileValue, str] = None):
         if isinstance(title, str):
             title = DatabaseTitle(title)
         database_object = DatabaseObject(
