@@ -1,5 +1,5 @@
-from ..syntax import *
-from ..database.Property import PropertyBase
+from .Color import *
+from .NotionObject import *
 from enum import Enum
 
 

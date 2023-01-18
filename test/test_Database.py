@@ -1,7 +1,8 @@
 import unittest
 
 from NotionClient import Notion
-from database import *
+from object import *
+from base import *
 
 
 class DatabaseTest(unittest.TestCase):
@@ -18,7 +19,7 @@ class DatabaseTest(unittest.TestCase):
     def test_update_database(self):
         db = self.notion_bot.create_new_database(
             parent=self.page,
-            title="Hello",
+            title=Texts('Hello'),
             properties=Properties(
                 title=TitleProperty(),
                 l_b=LastEditedByProperty(),
@@ -27,8 +28,10 @@ class DatabaseTest(unittest.TestCase):
                 c_t=CreatedTimeProperty()
             )
         )
+        # print("before update")
+        # print(db.print_properties())
         result = db.update(
-            title=DatabaseTitle('Hello'),
+            title=Texts('Hello'),
             properties=Properties(
                 Test=TextProperty(),
                 Test_clear=TextProperty(),
@@ -36,10 +39,12 @@ class DatabaseTest(unittest.TestCase):
                 number=NumberProperty(),
             )
         )
+        # print("after update")
+        # print(db.print_properties())
         self.assertTrue(isinstance(result, dict))
         result = db.update(
-            description=DatabaseDescription('Test description\n', 'beautiful\n'),
-            title=DatabaseTitle('Hello'),
+            description=Texts('Test description\n', 'beautiful\n'),
+            title=Texts('Hello'),
             properties=Properties(
                 Test_clear=None,
                 # number_change_name=PropertyName('number_change')

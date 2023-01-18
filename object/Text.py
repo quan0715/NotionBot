@@ -1,6 +1,5 @@
 from typing import Union
-
-from syntax import Colors
+from .Color import Colors
 from enum import Enum
 from .NotionObject import *
 
@@ -66,6 +65,12 @@ class Text(NotionObject):
     #     self.link = url
     #     self.link_object.update(self.link)
     #     self.template[0]['text']["link"] = self.link_object.make()
+class Texts(NotionObject):
+    def __init__(self, *contents: Union[str, Text]):
+        super().__init__()
+        self.template = [
+            c.make() if isinstance(c, Text) else Text(c).make() for c in contents
+        ]
 
 
 class TextProperty(PropertyBase):

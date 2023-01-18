@@ -1,9 +1,8 @@
 import unittest
 
 from NotionClient import Notion
-from block import *
-from page import *
-from database import *
+from base import *
+from object import *
 
 class NotionClientTest(unittest.TestCase):
     def setUp(self): # will be called before each testcase startup
@@ -43,11 +42,13 @@ class NotionClientTest(unittest.TestCase):
         test_page = self.notion_bot.get_page('3be396829d3149b2818a4957ff878bf9')
         result = self.notion_bot.create_new_database(
             parent=test_page,
-            title="Hello",
+            title=Texts('hey', 'hi'),
             properties=Properties(
                 name=TitleProperty(),
                 test=TextProperty(),
-            )
+            ),
+            description = Texts('Hello', 'hhhhhh\n\n\n'),
+            icon = Emoji('🐧')
         )
         self.assertEqual(True, isinstance(result, Database))
 

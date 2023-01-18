@@ -1,12 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-from page import *
-from block import *
+from base import *
 from object import *
-from database import *
+
 
 class Notion:
+    """
+    Client side of notion server, provide simple get method to retrieve block, page and database by their object index\n
+    you can also create new page or new database from client side
+    """
     user_api = "https://api.notion.com/v1/users/me"
     api = f'https://api.notion.com/v1'
     notion_version = "2022-06-28"
@@ -21,12 +24,6 @@ class Notion:
             "Authorization": f"Bearer {self.auth}",
             "Notion-Version": Notion.notion_version,
             "Accept": "application/json",
-
-        }
-        self.patch_headers = {
-            "Accept": "application/json",
-            "Authorization": f"Bearer {self.auth}",
-
         }
         # self.bot = self.bot_user()
 
@@ -37,10 +34,14 @@ class Notion:
             print(f"Connect to integration {r.json()['name']}")
             return r.json()
         else:
-            print("Connect failed please request again !!!")
-            return None
+            print(r.json()['message'])
+            return r.json()['message']
 
-    def search(self, target=None):
+    def search(self, target: str=None):
+        """
+        :param target:  the name of target database or page
+        :return: if success it will return json file which represent the list of search result,\n otherwise it will print error message and return it
+        """
         payload = {
             'query': f'{target}',
             'page_size': 100
@@ -50,8 +51,8 @@ class Notion:
         if r.status_code == 200:
             return r.json()
         else:
-            # print("Connect failed please request again !!!")
-            return None
+            print(r.json()['message'])
+            return r.json()['message']
 
     def get_block(self, block_id) -> Block:
         api = f"https://api.notion.com/v1/blocks/{block_id}"
@@ -59,7 +60,8 @@ class Notion:
         if r.status_code == 200:
             return Block(self, block_id)
         else:
-            return r.json()
+            print(r.json()['message'])
+            return r.json()['message']
 
     def get_page(self, page_id) -> Page:
         api = f"https://api.notion.com/v1/pages/{page_id}"
@@ -68,8 +70,8 @@ class Notion:
             # print(f"Connect to integration {r.json()['name']}")
             return Page(self, page_id)
         else:
-            return r.json()
-            # print("Connect failed please request again !!!")
+            print(r.json()['message'])
+            return r.json()['message']
 
     def get_database(self, database_id):
         database_api = f'https://api.notion.com/v1/databases/{database_id}'
@@ -77,42 +79,53 @@ class Notion:
         if r.status_code == 200:
             return Database(self, r.json()['id'])
         else:
-            print("Connect failed please request again !!!")
-            return None
+            print(r.json()['message'])
+            return r.json()['message']
 
 
     def create_new_page(self,
-                        parent: Union[Page, Parent],
+                        parent: Union[Page, Database, Parent],
                         properties: Union[Properties, dict] = Properties(),
-                        children: Union[Children, dict] = Children(),
-                        icon: Union[Emoji, str] = Emoji('🐧'),
-                        cover: Union[FileValue, str] = None):
+                        **kwargs):
         """
-        :param parent: the database parent or page parent. please use Parent object or json format
-        :param properties: Properties value of this page. please use Properties object or json format
-        :param children: Page content for the new page as an array of block objects. please use Children object or json format
-        :param icon: Page icon for the new page. Please use Emoji Object or string emoji.
-        :param cover: Page cover for the new page. Please use FileValue Object.
+        properties*	object Schema of properties. using Properties object to implement
+        parent	object	Information about the database's parent.
+        icon: File Object (only type of "external" is supported currently) or Emoji object. using File object or Emoji object
+        cover: File object (only type of "external" is supported currently). using File object
+        archived: boolean. The archived status of the database.
         """
-        if isinstance(parent, Page):
-            return parent.create_new_page(properties=properties, children=children, icon=icon, cover=cover)
+        page_object = BaseObject(
+            parent=Parent(parent) if not isinstance(parent, Parent) else parent,
+            properties=properties,
+            **kwargs
+        )
+        r = requests.post(Database.PageAPI, headers=self.headers, json=page_object.make())
+        if r.status_code == 200:
+            return Page(self, r.json()['id'])
+        else:
+            print(r.json()['message'])
+            return r.json()['message']
 
     def create_new_database(self,
                             parent: Union[Page, Parent],
-                            title: Union[DatabaseTitle, str] = DatabaseTitle("new database"),
                             properties: Union[Properties, dict] = Properties(),
-                            icon: Union[Emoji, str] = Emoji('🐧'),
-                            cover: Union[FileValue, str] = None):
-        if isinstance(title, str):
-            title = DatabaseTitle(title)
-        database_object = DatabaseObject(
-            parent=Parent(parent),
-            title=title,
-            properties= properties,
-            icon=icon,
+                            **kwargs):
+        """
+            parent	object	Information about the database's parent.
+            properties*	object Schema of properties. using Properties object to implement
+            title: array of rich text objects. using Texts object to implement
+            description: array of rich text . using Texts object to implement
+            icon: File Object or Emoji object. using File object or Emoji object
+            cover: File object (only type of "external" is supported currently). using File object
+            archived: boolean. The archived status of the database.
+            is_inline: boolean. Has the value true if the database appears in the page as an inline block.
+        """
+        database_object = BaseObject(
+            parent=Parent(parent) if not isinstance(parent, Parent) else parent,
+            properties=properties,
+            **kwargs
         )
-        #print(database_object.make())
-        r = requests.post(BaseObject.DatabaseAPI, headers=self.headers, json=database_object.make())
+        r = requests.post(Database.DatabaseAPI, headers=self.headers, json=database_object.make())
         if r.status_code == 200:
             return Database(self, r.json()['id'])
         else:
@@ -122,16 +135,18 @@ class Notion:
 if __name__ == '__main__':
     notion_bot = Notion(auth="secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy")
     test_page = notion_bot.get_page('3be396829d3149b2818a4957ff878bf9')
-    # db = notion_bot.get_database('ad29cd8f20584c1d98d33bf9e70c5377')
-    db = notion_bot.create_new_database(
-        parent=test_page,
-        title="Hello",
-        properties=Properties(
-            name=TitleProperty(),
-            test=TextProperty(),
-        )
-    )
-    print(db.retrieve())
+    db = notion_bot.get_database('ad29cd8f20584c1d98d33bf9e70c5377')
+    r = db.query()
+    print(r)
+    # db = notion_bot.create_new_database(
+    #     parent=test_page,
+    #     title="Hello",
+    #     properties=Properties(
+    #         name=TitleProperty(),
+    #         test=TextProperty(),
+    #     )
+    # )
+    # print(db.print_properties())
     # # p = Properties(title=TitleValue('Hello'))
     # # print(p.make())
     # test = notion_bot.create_new_page(

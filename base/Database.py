@@ -1,52 +1,19 @@
-
-from page import *
+from .Page import Page
 from object import *
+from  .Base import Base
 import asyncio
 import requests
 from typing import Union
 
 
-class DatabaseObject(NotionObject):
-    def __init__(self, archived=False, **kwargs):
-        """
-        :param parent: the database parent or page parent. please use Parent object or json format
-        :param properties: Properties value of this page. please use Properties object or json format
-        :param icon: Page icon for the new page. Please use Emoji Object or string emoji.
-        :param cover: Page cover for the new page. Please use FileValue Object.
-        :param archived: If it is True delete page otherwise restore\
-        :param title: If it is True delete page otherwise restore
-        """
-        super().__init__()
-        # self.template.update(title.make())
-        params = ['parent', 'properties', 'icon', 'cover', 'title','description']
-        self.template['archived'] = archived
-        for key, value in kwargs.items():
-            if key in params and value:
-                self.template[key] = value.make()
-
-
-class DatabaseDescription(NotionObject):
-    def __init__(self, *description: Union[str, Text]):
-        super().__init__()
-        description = TextValue(*description).make()
-        self.template = description['rich_text']
-
-
-class DatabaseTitle(NotionObject):
-    def __init__(self, *contents):
-        super().__init__()
-        title = TextValue(*contents).make()
-        self.template = title['rich_text']
-
-
-class Database(BaseObject):
+class Database(Base):
     def __init__(self, bot, database_id: str):
         super().__init__(bot, database_id, 'database')
         self.database_query_api = f'{self.object_api}/query'
         self.description = None
 
     def update(self, **kwargs):
-        database_object = DatabaseObject(**kwargs)
+        database_object = BaseObject(**kwargs)
         r = requests.patch(self.object_api, headers=self.bot.headers, json=database_object.make())
         if r.status_code == 200:
             return r.json()
@@ -57,7 +24,7 @@ class Database(BaseObject):
                         children: Union[Children, dict] = Children(),
                         icon: Union[Emoji, str] = Emoji('🐧'),
                         cover: Union[FileValue, str] = None):
-        database_object = DatabaseObject(
+        database_object = BaseObject(
             parent=Parent(self),
             properties=properties,
             children=children,
@@ -65,7 +32,7 @@ class Database(BaseObject):
             cover=cover
         )
         # print(database_object.make())
-        r = requests.post(BaseObject.PageAPI, headers=self.bot.headers, json=database_object.make())
+        r = requests.post(Base.PageAPI, headers=self.bot.headers, json=database_object.make())
         if r.status_code == 200:
             return Page(bot=self.bot, page_id=str(r.json()['id']))
         else:
@@ -87,7 +54,7 @@ class Database(BaseObject):
 
 
     # async def async_post(self, data: PageObject, session):
-    #     async with session.post(BaseObject.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make())) as resp:
+    #     async with session.post(Base.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make())) as resp:
     #         if resp.status != 200:
     #             print(resp.status)
     #             print(await resp.text())

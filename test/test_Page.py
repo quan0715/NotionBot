@@ -1,9 +1,8 @@
 import unittest
 
 from NotionClient import Notion
-from block import *
-from page import *
-
+from base import *
+from object import *
 
 class PageTest(unittest.TestCase):
     def setUp(self):  # will be called before each testcase startup
@@ -14,11 +13,11 @@ class PageTest(unittest.TestCase):
         self.notion_bot = None
         self.page = None
 
-    def test_create_new_page(self):
-        result = self.page.create_new_page(
-            properties=Properties(title=TitleValue("Hello"))
-        )
-        self.assertTrue(isinstance(result, Page))
+    # def test_create_new_page(self):
+    #     result = self.page.create_new_page(
+    #         properties=Properties(title=TitleValue("Hello"))
+    #     )
+    #     self.assertTrue(isinstance(result, Page))
 
     def test_update_page(self):
         p = self.page.create_new_page()

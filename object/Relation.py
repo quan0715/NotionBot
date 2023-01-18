@@ -1,5 +1,6 @@
 from enum import Enum
-from database.Property import PropertyBase
+from .NotionObject import *
+from typing import List, Union
 
 
 class RelationProperty(PropertyBase):
