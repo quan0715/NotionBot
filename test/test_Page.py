@@ -4,6 +4,7 @@ from NotionClient import Notion
 from base import *
 from object import *
 
+
 class PageTest(unittest.TestCase):
     def setUp(self):  # will be called before each testcase startup
         self.notion_bot = Notion(auth="secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy")
