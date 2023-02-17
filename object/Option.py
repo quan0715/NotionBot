@@ -1,5 +1,5 @@
-from PyNotion.syntax import *
-from PyNotion.database.Property import PropertyBase
+from .Color import *
+from .NotionObject import *
 from enum import Enum
 
 

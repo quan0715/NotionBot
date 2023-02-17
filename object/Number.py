@@ -1,5 +1,5 @@
 from enum import Enum
-from PyNotion.database.Property import PropertyBase
+from .NotionObject import *
 
 
 class Number:
@@ -75,16 +75,16 @@ class Number:
 
 class NumberProperty(PropertyBase):
     def __init__(self, _format=Number.Format.number):
-        super().__init__(Number.Type.number)
+        PropertyBase.__init__(self, Number.Type.number)
         self.format = _format
         self.template[self.type] = {"format": _format}
 
 
 class NumberValue(NumberProperty):
-    def __init__(self, key, value):
+    def __init__(self, value):
         super().__init__()
         self.value = value
         if isinstance(self.value, int) or isinstance(self.value, float):
             self.value = Number(self.value)
 
-        self.template = {key: {self.type: self.value.make()}}
+        self.template = {self.type: self.value.make()}

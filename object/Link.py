@@ -1,13 +1,5 @@
 from enum import Enum
-from PyNotion.database.Property import PropertyBase
-
-
-class Url:
-    def __init__(self, url:str):
-        self.url = url
-
-    def make(self):
-        return self.url
+from .NotionObject import *
 
 
 class UrlProperty(PropertyBase):
@@ -16,23 +8,14 @@ class UrlProperty(PropertyBase):
 
 
 class UrlValue(UrlProperty):
-    def __init__(self, key, value):
-        super().__init__()
-        self.value = value
-        if isinstance(self.value, str):
-            self.value = Url(self.value)
-        self.template = {key: self.value.make()}
+    def __init__(self, url):
+        UrlProperty.__init__(self)
+        self.url = url
+        self.template = {self.type: self.url}
 
 
 class Link(UrlProperty):
-    def __init__(self, url=None):
+    def __init__(self, url: str=None):
         super().__init__()
         self.url = url
         self.template = {"type": self.type, self.type: url}
-
-    def make(self):
-        return self.template
-
-    def update(self, url):
-        self.url = url
-        self.template[self.type] = self.url

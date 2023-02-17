@@ -281,7 +281,7 @@
 #
 #
 # class FileObject:
-#     def __init__(self, url, file_type=File.Type.external):
+#     def __init__(self, url, file_type=FileValue.Type.external):
 #         self.url = url
 #         self.file_type = file_type
 #         self.template = dict(type=self.file_type)
@@ -583,7 +583,7 @@
 #     Bookmark = BookmarkBlockObject
 #     Equation = EquationBlockObject
 #     Divider = DividerBlockObject
-#     File = FileBlockObject
+#     FileValue = FileBlockObject
 #     TableOfContent = TableOfContentBlockObject
 #     Breadcrumb = BreadcrumbBlockObject
 #     ColumnList = ColumnListBlockObject
