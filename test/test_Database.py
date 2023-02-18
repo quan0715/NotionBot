@@ -1,8 +1,8 @@
 import unittest
 
-from NotionClient import Notion
-from object import *
-from base import *
+from PyNotion.NotionClient import Notion
+from PyNotion.object import *
+from PyNotion.base import *
 
 
 class DatabaseTest(unittest.TestCase):

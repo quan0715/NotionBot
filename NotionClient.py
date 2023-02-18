@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-from base import *
-from object import *
+from PyNotion.base import *
+from PyNotion.object import *
 
 
 class Notion:
@@ -37,7 +37,7 @@ class Notion:
             print(r.json()['message'])
             return r.json()['message']
 
-    def search(self, target: str=None):
+    def search(self, target: str = None):
         """
         :param target:  the name of target database or page
         :return: if success it will return json file which represent the list of search result,\n otherwise it will print error message and return it
@@ -81,7 +81,6 @@ class Notion:
         else:
             print(r.json()['message'])
             return r.json()['message']
-
 
     def create_new_page(self,
                         parent: Union[Page, Database, Parent],
@@ -157,7 +156,7 @@ if __name__ == '__main__':
     #     icon=Emoji('🐒')
     # )
     # test.restore()
-    #print(test_page.retrieve())
+    # print(test_page.retrieve())
     # print(test_page.retrieve_property_item())
     # notion_bot.create_new_page(parent=test_page, properties=Properties())
 
@@ -225,5 +224,3 @@ if __name__ == '__main__':
     #         return Database(self, r.json()['id'])
     #     else:
     #         print(r.json()['message'])
-
-

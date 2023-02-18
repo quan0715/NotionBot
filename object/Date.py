@@ -3,7 +3,7 @@ from .NotionObject import *
 from datetime import datetime
 
 
-class Date:
+class NotionDate:
     class Type(str, Enum):
         date = "date"
         created_time = "created_time"
@@ -34,16 +34,18 @@ class Date:
         self.time_zone = time_zone
 
         self.template = dict(
-            start=Date.iso_format(self.start),
-            end=Date.iso_format(self.end),
+            start=NotionDate.iso_format(self.start),
+            end=NotionDate.iso_format(self.end),
             time_zone=self.time_zone,
         )
+        # print(self.template)
 
     @staticmethod
     def iso_format(time):
+        if isinstance(time, str):
+            return datetime.fromisoformat(time).isoformat()
         if isinstance(time, datetime):
             return time.isoformat()
-        return time
 
     def make(self):
         return self.template
@@ -55,7 +57,7 @@ class DateProperty(PropertyBase):
 
 
 class DateValue(DateProperty):
-    def __init__(self, key, value):
+    def __init__(self, value: NotionDate):
         super().__init__()
         self.value = value
-        self.template = {key: self.value.make()}
+        self.template = {"date": self.value.make()}

@@ -1,4 +1,4 @@
-from object import *
+from PyNotion.object import *
 import asyncio
 import requests
 from enum import Enum

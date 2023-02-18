@@ -1,4 +1,4 @@
-from object import *
+from PyNotion.object import *
 from .Base import *
 
 class Block(Base):

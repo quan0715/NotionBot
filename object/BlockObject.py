@@ -1,4 +1,4 @@
-from object import *
+from PyNotion.object import *
 from typing import Union
 
 
@@ -93,7 +93,7 @@ class HeadingBlock(BaseBlockObject):
         self.update_children(self.children)
 
 
-class CalloutBlock(BaseBlockObject):
+class CallOutBlock(BaseBlockObject):
     def __init__(self, *text_block, color=Colors.Text.default, emoji=None, children=None):
         super().__init__("callout", color=color, text_block=text_block, children=children)
         self.emoji = emoji

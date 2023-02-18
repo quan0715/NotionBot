@@ -1,5 +1,5 @@
 from typing import Union
-from object import *
+from PyNotion.object import *
 from .Base import Base
 import asyncio
 import requests

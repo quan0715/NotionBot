@@ -1,6 +1,6 @@
 from .Page import Page
-from object import *
-from  .Base import Base
+from PyNotion.object import *
+from .Base import Base
 import asyncio
 import requests
 from typing import Union
@@ -52,32 +52,32 @@ class Database(Base):
         else:
             return r.json()['message']
 
-
-    # async def async_post(self, data: PageObject, session):
-    #     async with session.post(Base.PageAPI, headers=self.bot.patch_headers, data=json.dumps(data.make())) as resp:
-    #         if resp.status != 200:
-    #             print(resp.status)
-    #             print(await resp.text())
-    #             print(data.template)
-    #         return resp
-    #         # try:
-    #         #     return Page(bot=self.bot, page_id=str(resp.json()['id']))
-    #         # except KeyError:
-    #         #     print("Create failed")
-    #         #     print(resp.json()['message'])
-    #         #     return resp.json()['message']
+    async def async_post(self, database_object: BaseObject, session):
+        async with session.post(Base.PageAPI, headers=self.bot.headers, json=database_object.make()) as resp:
+            if resp.status != 200:
+                print(resp.status)
+                print(await resp.text())
+                print(database_object.template)
+            return resp
+            # try:
+            #     return Page(bot=self.bot, page_id=str(resp.json()['id']))
+            # except KeyError:
+            #     print("Create failed")
+            #     print(resp.json()['message'])
+            #     return resp.json()['message']
     #
 
-    # def query_database_page_list(self, query=None):
-    #     results_list = self.query_database(query)
-    #     results = [Page(self.bot, col['id'], parent=self) for col in results_list]
-    #     return results
-    #
+    def query_database_page_list(self, query=None):
+        results_list = self.query_database(query)
+        results = [Page(self.bot, col['id'], parent=self) for col in results_list]
+        return results
+
     # def query_database_dataframe(self, query: Query = None):
-    #     result_list = self.query_database(query)
-    #     result = {p: [] for p in self.properties}
+    #     result_list = self.query(query)
+    #     properties = result_list['properties']
+    #     result = {p: [] for p in properties}
     #     for col in result_list:
-    #         data = super().properties_data(col['properties'])
+    #         data = super().query(col['properties'])
     #         for t, v in data.items():
     #             result[t].append(v)
     #     return result

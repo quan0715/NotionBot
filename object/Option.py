@@ -40,14 +40,14 @@ class MultiSelectProperty(PropertyBase):
 
 
 class SelectValue(SelectProperty):
-    def __init__(self, key, value):
+    def __init__(self, value: Union[Option, str]):
         super().__init__()
         self.value = value
         if isinstance(self.value, str):
             self.value = Option(self.value)
 
         self.value.value()
-        self.template = {key: self.value.make()}
+        self.template = {"select": self.value.make()}
 
 
 class MultiSelectValue(MultiSelectProperty):
