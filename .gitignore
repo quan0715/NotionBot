@@ -1,4 +1,6 @@
 ./venv/
 ./__pycache__/
-././__pycache__/
+./base/__pycache__/
+./object/__pycache__/
+./test/__pycache__/
 .test.py
