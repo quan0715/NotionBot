@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Union
 
+
 class NotionObject:
     def __init__(self):
         self.template = {}
@@ -41,6 +42,7 @@ class BaseObject(NotionObject):
             else:
                 self.template[key] = value
 
+
 class Parent(NotionObject):
     class Type(str, Enum):
         database = "database_id"
@@ -55,6 +57,7 @@ class Parent(NotionObject):
 
     def __repr__(self):
         return f"Parent type : {self.parent_type}\n object_id : {self.parent_id}"
+
 
 class Children(NotionObject):
     def __init__(self, *children):

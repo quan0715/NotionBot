@@ -12,3 +12,4 @@ from .Relation import *
 from .Properties import *
 from .Color import *
 from .Syntax import *
+from .Search import *
