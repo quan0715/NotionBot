@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-from PyNotion.base import *
-from PyNotion.object import *
+from base import *
+from object import *
 
 
 class Notion:

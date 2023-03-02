@@ -1,5 +1,5 @@
 from .Page import Page
-from PyNotion.object import *
+from object import *
 from .Base import Base
 import asyncio
 import requests

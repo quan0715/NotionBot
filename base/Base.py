@@ -1,8 +1,7 @@
-from PyNotion.object import *
+from object import *
 import asyncio
 import requests
 from enum import Enum
-import json
 
 
 class Base:
