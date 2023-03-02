@@ -4,3 +4,5 @@
 ./object/__pycache__/
 ./test/__pycache__/
 .test.py
+./dist
+./NotionBot.egg-info
