@@ -3,6 +3,5 @@
 ./base/__pycache__/
 ./object/__pycache__/
 ./test/__pycache__/
-.test.py
-./dist
+./dist/
 ./NotionBot.egg-info
