@@ -2,10 +2,10 @@ from setuptools import find_packages, setup
 
 setup(
     name='NotionBot',
-    version='0.0.5',
+    version='0.0.8',
     author='Quan',
     author_email='quan787887@gmail.com',
-    packages=['NotionBot'],
+    packages=find_packages(),
     url='https://github.com/quan0715/PyNotion',
     license='license.txt',
     description='Wrapper around Notion API.',
