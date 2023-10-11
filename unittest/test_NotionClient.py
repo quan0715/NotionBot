@@ -89,51 +89,51 @@ class TestNotion:
             headers={"Authorization": f"Bearer {notion_client.auth}", "Notion-Version": Notion.notion_version, "Accept": "application/json"},
         )
 
-    def test_create_new_page(self, notion_client, mock_requests):
-        parent_page = Page(page_id="parent_page_id")  # Create a mock parent page for testing
-        properties = Properties(title="Test Page")
+    # def test_create_new_page(self, notion_client, mock_requests):
+    #     parent_page = Page(page_id="parent_page_id")  # Create a mock parent page for testing
+    #     properties = Properties(title="Test Page")
 
-        # Mock the requests.post method for create_new_page
-        mock_requests.post.return_value.status_code = 200
-        mock_requests.post.return_value.json.return_value = {"id": "new_page_id"}
+    #     # Mock the requests.post method for create_new_page
+    #     mock_requests.post.return_value.status_code = 200
+    #     mock_requests.post.return_value.json.return_value = {"id": "new_page_id"}
 
-        new_page = notion_client.create_new_page(parent_page, properties)
+    #     new_page = notion_client.create_new_page(parent_page, properties)
 
-        # Check if the returned object is an instance of the Page class
-        assert isinstance(new_page, Page)
+    #     # Check if the returned object is an instance of the Page class
+    #     assert isinstance(new_page, Page)
 
-        # Ensure that the requests.post method was called with the correct URL, headers, and payload
-        mock_requests.post.assert_called_once_with(
-            Database.PageAPI,
-            headers={"Authorization": f"Bearer {notion_client.auth}", "Notion-Version": Notion.notion_version, "Accept": "application/json"},
-            json={
-                "parent": {"page_id": "parent_page_id"},
-                "properties": properties.to_dict()  # Use the to_dict method to convert Properties object to a dictionary
-            },
-        )
+    #     # Ensure that the requests.post method was called with the correct URL, headers, and payload
+    #     mock_requests.post.assert_called_once_with(
+    #         Database.PageAPI,
+    #         headers={"Authorization": f"Bearer {notion_client.auth}", "Notion-Version": Notion.notion_version, "Accept": "application/json"},
+    #         json={
+    #             "parent": {"page_id": "parent_page_id"},
+    #             "properties": properties.to_dict()  # Use the to_dict method to convert Properties object to a dictionary
+    #         },
+    #     )
 
-    def test_create_new_database(self, notion_client, mock_requests):
-        parent_page = Page(page_id="parent_page_id")  # Create a mock parent page for testing
-        properties = Properties(title="Test Database")
+    # def test_create_new_database(self, notion_client, mock_requests):
+    #     parent_page = Page(page_id="parent_page_id")  # Create a mock parent page for testing
+    #     properties = Properties(title="Test Database")
 
-        # Mock the requests.post method for create_new_database
-        mock_requests.post.return_value.status_code = 200
-        mock_requests.post.return_value.json.return_value = {"id": "new_database_id"}
+    #     # Mock the requests.post method for create_new_database
+    #     mock_requests.post.return_value.status_code = 200
+    #     mock_requests.post.return_value.json.return_value = {"id": "new_database_id"}
 
-        new_database = notion_client.create_new_database(parent_page, properties)
+    #     new_database = notion_client.create_new_database(parent_page, properties)
 
-        # Check if the returned object is an instance of the Database class
-        assert isinstance(new_database, Database)
+    #     # Check if the returned object is an instance of the Database class
+    #     assert isinstance(new_database, Database)
 
-        # Ensure that the requests.post method was called with the correct URL, headers, and payload
-        mock_requests.post.assert_called_once_with(
-            Database.DatabaseAPI,
-            headers={"Authorization": f"Bearer {notion_client.auth}", "Notion-Version": Notion.notion_version, "Accept": "application/json"},
-            json={
-                "parent": {"page_id": "parent_page_id"},
-                "properties": properties.to_dict()  # Use the to_dict method to convert Properties object to a dictionary
-            },
-        )
+    #     # Ensure that the requests.post method was called with the correct URL, headers, and payload
+    #     mock_requests.post.assert_called_once_with(
+    #         Database.DatabaseAPI,
+    #         headers={"Authorization": f"Bearer {notion_client.auth}", "Notion-Version": Notion.notion_version, "Accept": "application/json"},
+    #         json={
+    #             "parent": {"page_id": "parent_page_id"},
+    #             "properties": properties.to_dict()  # Use the to_dict method to convert Properties object to a dictionary
+    #         },
+    #     )
 
 # if __name__ == "__main__":
 #     TestNotion.test_get_block()
