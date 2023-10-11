@@ -38,7 +38,7 @@ database = your_notion_bot.get_page("your_database_title")
 ```
 ###
 ```python3
-block = your_notion_bot.fetch_block("your_block_id")
+block = your_notion_bot.get_block("your_block_id")
 ```
 
 Check [Guide](./Guide/SDKGuide.md) for more details about the usage.

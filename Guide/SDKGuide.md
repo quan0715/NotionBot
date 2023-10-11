@@ -1,6 +1,12 @@
 ># NotionBot SDK Guide
 
-## Notion object
+|Guide|Description|
+|-|-|
+|[Notion Class](#notion-class)|Create a new Notion client object and assign specific tasks(e.g. search, create database...etc) to it.|
+|[Page Class]()||
+|[Block Class]()||
+
+## Notion class
 
 ### Notion(auth)
 * Constructor of the Notion object.
@@ -57,3 +63,17 @@
 #### Return Value
 * If the request succeeded, it will return a `Database` obejct. (see [Database](./NotionBot/base/Database.py) object)
 * If the request failed, it will print error message and return it.
+
+### Notion.create_new_page(parent, properties)
+#### Parameters
+* `parent` represents the parent page or database where the new page is inserted, represented as a JSON object with a page_id or database_id key, and the corresponding ID.
+* `properties` represents schema of properties, using [Properties object](../NotionBot/object/Properties.py) to implement predefined json template.
+
+#### Return Value
+* If the request succeeded, it will return a `Page` obejct. (see [Page](./NotionBot/base/Page.py) object)
+* If the request failed, it will print error message and return it.
+
+### Notion.create_new_database()
+#### Parameters
+* `parent` represents the parent page or database where the new page is inserted, represented as a JSON object with a page_id or database_id key, and the corresponding ID.
+* `properties` : The values of the page’s properties. If the parent is a database, then the schema must match the parent database’s properties. If the parent is a page, then the only valid object key is title.
