@@ -28,7 +28,7 @@ def notion_client(mock_requests):
 # Test cases for the NotionClient.Notion class
 class TestNotion():
 
-    def test_get_user_success(self, notion_client, mock_requests):
+    def test_get_existing_user(self, notion_client, mock_requests):
 
         # Mock the requests.get method
         mock_requests.get.return_value.status_code = 200
@@ -43,7 +43,7 @@ class TestNotion():
             headers=notion_client.headers
         )
 
-    def test_get_user_failure(self, notion_client, mock_requests):
+    def test_get_non_existing_user(self, notion_client, mock_requests):
 
         # Mock the requests.get method
         mock_requests.get.return_value.status_code = 400
@@ -58,29 +58,46 @@ class TestNotion():
             headers=notion_client.headers
         )
 
-    def test_search(self, notion_client, mock_requests):
+    def test_search_valid_object(self, notion_client, mock_requests):
         
-        search_result = {"results": [{"name": "Test search results"}]}
-        target = "test_target"
+        expected_result = {"results": [{"name": "Test search results"}]}
+        input_target = "valid_test_target"
 
         mock_requests.post.return_value.status_code = 200
         mock_requests.post.return_value.json.return_value = {"results": [{"name": "Test search results"}]}
 
-        result = notion_client.search(target)
-        assert result == search_result
+        result = notion_client.search(input_target)
+        assert result == expected_result
 
         mock_requests.post.assert_called_once_with(
             "https://api.notion.com/v1/search",
             headers=notion_client.headers,
-            json={"query": target, "page_size": 100},
+            json={"query": input_target, "page_size": 100},
         )
 
-    def test_get_block(self, notion_client, mock_requests):
-        block_id = "block_id"
+    def test_search_invalid_object(self, notion_client, mock_requests):
+        
+        expected_result = "No object found"
+        input_target = "invalid_test_target"
+
+        mock_requests.post.return_value.status_code = 400
+        mock_requests.post.return_value.json.return_value = {"message": "No object found"}
+
+        result = notion_client.search(input_target)
+        assert result == expected_result
+
+        mock_requests.post.assert_called_once_with(
+            "https://api.notion.com/v1/search",
+            headers=notion_client.headers,
+            json={"query": input_target, "page_size": 100},
+        )
+
+    def test_get_existing_block(self, notion_client, mock_requests):
 
         mock_requests.get.return_value.status_code = 200
         mock_requests.get.return_value.json.return_value = {"id": "test_block_id"}
 
+        block_id = "valid_block_id"
         block = notion_client.get_block(block_id)
 
         assert isinstance(block, Block)
@@ -90,16 +107,46 @@ class TestNotion():
             headers=notion_client.headers
         )
 
-    def test_get_database(self, notion_client, mock_requests):
+    def test_get_non_existing_block(self, notion_client, mock_requests):
+
+        mock_requests.get.return_value.status_code = 400
+        mock_requests.get.return_value.json.return_value = {"message": "No such block"}
+
+        block_id = "invalid_block_id"
+        result = notion_client.get_block(block_id)
+
+        assert result == "No such block"
+
+        mock_requests.get.assert_called_once_with(
+            f"https://api.notion.com/v1/blocks/{block_id}",
+            headers=notion_client.headers
+        )
+
+    def test_get_existing_database(self, notion_client, mock_requests):
 
         mock_requests.get.return_value.status_code = 200
         mock_requests.get.return_value.json.return_value = {"id": "test_database_id"}
 
-        database_id = "database_id"
+        database_id = "valid_database_id"
         database = notion_client.get_database(database_id)
 
         # Check if the returned database is an instance of the Database class
         assert isinstance(database, Database)
+
+        mock_requests.get.assert_called_once_with(
+            f"https://api.notion.com/v1/databases/{database_id}",
+            headers=notion_client.headers
+        )
+
+    def test_get_non_existing_database(self, notion_client, mock_requests):
+
+        mock_requests.get.return_value.status_code = 400
+        mock_requests.get.return_value.json.return_value = {"message": "No such database"}
+
+        database_id = "invalid_database_id"
+        result = notion_client.get_database(database_id)
+
+        assert result == "No such database"
 
         mock_requests.get.assert_called_once_with(
             f"https://api.notion.com/v1/databases/{database_id}",
