@@ -1,7 +1,7 @@
 # Unit Test Document of NotionBot.NotionClient
 
 ## Introduction
-This document outlines the unit testing structure, methods, test cases of [test_Notion_Client.py](./test_NotionClient.py).
+This document outlines the unit testing structure, methods, test cases of [test_NotionClient.py](./test_NotionClient.py).
 
 ## Test Execution
 To run the tests, navigate under 'NotionBot' folder, and use the following command.
