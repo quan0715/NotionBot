@@ -1,7 +1,7 @@
 # NotionBot
 ## Introducing to NotionBot
 
-NotionBot SDK is an user-friendly toolkit designed to simplify interactions with the official Notion API. It empowers developers to easily integrate Notion's features into their applications.
+NotionBot SDK is an developer-friendly toolkit designed to simplify interactions with the official Notion API. It empowers developers to easily integrate Notion's features into their applications.
 
 ## How to use it
 
@@ -38,7 +38,7 @@ database = your_notion_bot.get_page("your_database_title")
 ```
 ###
 ```python3
-block = your_notion_bot.fetch_block("your_block_id")
+block = your_notion_bot.get_block("your_block_id")
 ```
 
 Check [Guide](./Guide/SDKGuide.md) for more details about the usage.
